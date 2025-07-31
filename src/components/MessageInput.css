@@ -1,0 +1,119 @@
+.message-input {
+  padding: 16px;
+  background-color: white;
+  border-top: 1px solid #e9ecef;
+}
+
+.message-input__container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #f8f9fa;
+  border-radius: 24px;
+  padding: 8px 16px;
+  border: 1px solid #e9ecef;
+  transition: border-color 0.2s ease;
+}
+
+.message-input__container:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.message-input__language-indicator {
+  font-size: 16px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.message-input__field {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #212529;
+  resize: none;
+}
+
+.message-input__field::placeholder {
+  color: #6c757d;
+}
+
+.message-input__field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.message-input__send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.message-input__send:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.message-input__send:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.message-input__send svg {
+  width: 16px;
+  height: 16px;
+}
+
+.message-input__typing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.message-input__typing-indicator span {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .message-input {
+    padding: 12px;
+  }
+  
+  .message-input__container {
+    padding: 6px 12px;
+  }
+  
+  .message-input__send {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .message-input__language-indicator {
+    font-size: 14px;
+  }
+} 
