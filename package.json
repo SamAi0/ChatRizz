@@ -1,0 +1,37 @@
+{
+  "name": "chatrizz-backend",
+  "version": "1.0.0",
+  "description": "ChatRizz backend server with real-time messaging",
+  "main": "server/app.js",
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "nodemon server/app.js",
+    "setup-db": "node scripts/setup-database.js",
+    "setup-mongodb": "node scripts/setup-mongodb.js",
+    "migrate-to-mongodb": "node scripts/migrate-to-mongodb.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.3",
+    "mongoose": "^7.5.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.10.0",
+    "nodemailer": "^6.9.4",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "chat",
+    "messaging",
+    "realtime",
+    "websockets"
+  ],
+  "author": "ChatRizz Team",
+  "license": "MIT"
+}
