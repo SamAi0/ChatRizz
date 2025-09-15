@@ -1,0 +1,32 @@
+mongodb+srv://admin:admin123@myappcluster.qgh2nih.mongodb.net/?retryWrites=true&w=majority&appName=MyAppCluster
+
+Jwt secret key
+2af7af96f7fe1cda7469360a5d997d076ee47cd637b7ffb4f790352ac7b5b08b3ceb5982af6855a9f9b6947ec4d853fbae3b2fda82b9af130b756390c6715888PS
+604ce552344c542717e39f1425b0d0ec9d094fc238b485f939ced06ead1be8fddf0a5ba3871d032d15ca588110725a91a5e3ff5cd77eaa990681e2c3fa1f4cf6
+
+Resend api keys
+re_NnbcxKBw_JT2ckWTjmFGRW17qdpyiXQbA
+
+Send an email
+Implement or run the code below to send your first email
+
+
+import { Resend } from 'resend';
+
+const resend = new Resend('re_NnbcxKBw_JT2ckWTjmFGRW17qdpyiXQbA');
+
+resend.emails.send({
+  from: 'onboarding@resend.dev',
+  to: 'ai1styear@gmail.com',
+  subject: 'Hello World',
+  html: '<p>Congrats on sending your <strong>first email</strong>!</p>'
+});
+
+
+   CLOUDINARY_CLOUD_NAME=dyedgwpzj
+   CLOUDINARY_API_KEY=255212667258678
+   CLOUDINARY_API_SECRET=KJjcSLyiN3plaYv0mAXjaY4Bo5M
+
+
+   ARCJET_KEY=ajkey_01k55ygg7mec198jhvh84wmdmt
+   ARCJET_ENV=development
