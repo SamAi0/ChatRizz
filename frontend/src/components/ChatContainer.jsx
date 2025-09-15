@@ -53,12 +53,27 @@ function ChatContainer() {
                   {msg.image && (
                     <img src={msg.image} alt="Shared" className="rounded-lg h-48 object-cover" />
                   )}
+                  {msg.attachmentUrl && !msg.image && (
+                    <a
+                      href={msg.attachmentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline text-xs opacity-90"
+                    >
+                      {msg.attachmentType?.startsWith("video/") ? "View video" : "Open file"}
+                    </a>
+                  )}
                   {msg.text && <p className="mt-2">{msg.text}</p>}
                   <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
                     {new Date(msg.createdAt).toLocaleTimeString(undefined, {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
+                    {msg.senderId === authUser._id && (
+                      <span className="ml-1">
+                        {msg.seen ? "✅✅" : msg.delivered ? "✅✅" : "✅"}
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>

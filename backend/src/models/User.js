@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    statusText: {
+      type: String,
+      default: "Available",
+      maxlength: 50,
+    },
   },
   { timestamps: true } // createdAt & updatedAt
 );

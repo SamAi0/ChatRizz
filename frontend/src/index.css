@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dark mode support */
+:root {
+  color-scheme: light dark;
+}
+
+.light {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
 @property --border-angle {
   inherits: false;
   initial-value: 0deg;

@@ -49,6 +49,8 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
       set({ messages: res.data });
+      // mark peer messages as seen when fetching
+      await axiosInstance.post(`/messages/seen/${userId}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
@@ -96,6 +98,8 @@ export const useChatStore = create((set, get) => ({
 
       const currentMessages = get().messages;
       set({ messages: [...currentMessages, newMessage] });
+      // immediately mark as seen when chat is open
+      axiosInstance.post(`/messages/seen/${selectedUser._id}`).catch(() => {});
 
       if (isSoundEnabled) {
         const notificationSound = new Audio("/sounds/notification.mp3");
@@ -104,10 +108,24 @@ export const useChatStore = create((set, get) => ({
         notificationSound.play().catch((e) => console.log("Audio play failed:", e));
       }
     });
+
+    socket.on("delivered", ({ messageId }) => {
+      const updated = get().messages.map((m) => (m._id === messageId ? { ...m, delivered: true } : m));
+      set({ messages: updated });
+    });
+
+    socket.on("seen", () => {
+      const updated = get().messages.map((m) =>
+        m.receiverId === selectedUser._id ? { ...m, seen: true, delivered: true } : m
+      );
+      set({ messages: updated });
+    });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
+    socket.off("delivered");
+    socket.off("seen");
   },
 }));
