@@ -52,10 +52,34 @@ export const sendMessage = async (req, res) => {
     }
 
     let imageUrl;
+    let uploadedAttachmentUrl = attachmentUrl;
+    let uploadedAttachmentType = attachmentType;
     if (image) {
       // upload base64 image to cloudinary
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
+    }
+
+    // If we received an attachment as a Data URL/base64, upload it to Cloudinary
+    if (attachmentUrl) {
+      try {
+        const upload = await cloudinary.uploader.upload(attachmentUrl, {
+          resource_type: "auto",
+        });
+        uploadedAttachmentUrl = upload.secure_url;
+        // Derive a mime-like type when possible (e.g., image/png, video/mp4, application/pdf)
+        if (!attachmentType) {
+          const possibleFormat = upload.format ? upload.format.toLowerCase() : undefined;
+          const resourceType = upload.resource_type; // image, video, raw
+          if (resourceType && possibleFormat) {
+            uploadedAttachmentType = `${resourceType === "raw" ? "application" : resourceType}/${possibleFormat}`;
+          } else if (resourceType) {
+            uploadedAttachmentType = resourceType;
+          }
+        }
+      } catch (err) {
+        console.error("Attachment upload failed:", err.message);
+      }
     }
 
     const newMessage = new Message({
@@ -63,8 +87,8 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
-      attachmentUrl,
-      attachmentType,
+      attachmentUrl: uploadedAttachmentUrl,
+      attachmentType: uploadedAttachmentType,
       delivered: false,
       seen: false,
     });

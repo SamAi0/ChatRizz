@@ -11,6 +11,7 @@ function MessageInput() {
   const [imagePreview, setImagePreview] = useState(null);
   const [fileInfo, setFileInfo] = useState(null); // {url, type, name}
 
+  const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const { sendMessage, isSoundEnabled, selectedUser } = useChatStore();
@@ -30,6 +31,7 @@ function MessageInput() {
     setText("");
     setImagePreview("");
     setFileInfo(null);
+    if (imageInputRef.current) imageInputRef.current.value = "";
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -55,7 +57,7 @@ function MessageInput() {
 
   const removeImage = () => {
     setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   return (
@@ -102,7 +104,7 @@ function MessageInput() {
         <input
           type="file"
           accept="image/*"
-          ref={fileInputRef}
+          ref={imageInputRef}
           onChange={handleImageChange}
           className="hidden"
         />
@@ -110,7 +112,7 @@ function MessageInput() {
 
         <button
           type="button"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => imageInputRef.current?.click()}
           className={`bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-4 transition-colors ${
             imagePreview ? "text-cyan-500" : ""
           }`}
@@ -126,7 +128,7 @@ function MessageInput() {
         </button>
         <button
           type="submit"
-          disabled={!text.trim() && !imagePreview}
+          disabled={!text.trim() && !imagePreview && !fileInfo}
           className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg px-4 py-2 font-medium hover:from-cyan-600 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <SendIcon className="w-5 h-5" />
