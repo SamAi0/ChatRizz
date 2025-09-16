@@ -20,6 +20,23 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+    attachmentUrl: {
+      type: String,
+    },
+    attachmentType: {
+      type: String, // mime type e.g., "video/mp4", "application/pdf"
+    },
+    delivered: {
+      type: Boolean,
+      default: false,
+    },
+    seen: {
+      type: Boolean,
+      default: false,
+    },
+    seenAt: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );

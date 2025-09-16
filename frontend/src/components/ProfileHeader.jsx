@@ -9,6 +9,9 @@ function ProfileHeader() {
   const { logout, authUser, updateProfile } = useAuthStore();
   const { isSoundEnabled, toggleSound } = useChatStore();
   const [selectedImg, setSelectedImg] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [statusText, setStatusText] = useState("");
 
   const fileInputRef = useRef(null);
 
@@ -24,6 +27,11 @@ function ProfileHeader() {
       setSelectedImg(base64Image);
       await updateProfile({ profilePic: base64Image });
     };
+  };
+
+  const submitProfile = async () => {
+    await updateProfile({ fullName: name || authUser.fullName, statusText });
+    setEditing(false);
   };
 
   return (
@@ -57,16 +65,45 @@ function ProfileHeader() {
 
           {/* USERNAME & ONLINE TEXT */}
           <div>
-            <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
-              {authUser.fullName}
-            </h3>
-
-            <p className="text-slate-400 text-xs">Online</p>
+            {editing ? (
+              <div className="space-y-1">
+                <input
+                  className="bg-slate-800/50 border border-slate-700/50 rounded px-2 py-1 text-sm w-48"
+                  defaultValue={authUser.fullName}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <input
+                  className="bg-slate-800/50 border border-slate-700/50 rounded px-2 py-1 text-xs w-48"
+                  placeholder="Status (e.g., Available)"
+                  defaultValue={authUser.statusText || "Available"}
+                  onChange={(e) => setStatusText(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <button className="text-xs text-cyan-400" onClick={submitProfile}>Save</button>
+                  <button className="text-xs text-slate-400" onClick={() => setEditing(false)}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
+                  {authUser.fullName}
+                </h3>
+                <p className="text-slate-400 text-xs truncate max-w-[200px]">
+                  {authUser.statusText || "Available"}
+                </p>
+              </>
+            )}
           </div>
         </div>
 
         {/* BUTTONS */}
         <div className="flex gap-4 items-center">
+          <button
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+            onClick={() => setEditing((v) => !v)}
+          >
+            Edit
+          </button>
           {/* LOGOUT BTN */}
           <button
             className="text-slate-400 hover:text-slate-200 transition-colors"

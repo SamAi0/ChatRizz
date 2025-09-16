@@ -25,7 +25,7 @@ export const getMessagesByUserId = async (req, res) => {
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
       ],
-    });
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
   } catch (error) {
@@ -36,12 +36,12 @@ export const getMessagesByUserId = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
+    const { text, image, attachmentUrl, attachmentType } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
-    if (!text && !image) {
-      return res.status(400).json({ message: "Text or image is required." });
+    if (!text && !image && !attachmentUrl) {
+      return res.status(400).json({ message: "Provide text or a file." });
     }
     if (senderId.equals(receiverId)) {
       return res.status(400).json({ message: "Cannot send messages to yourself." });
@@ -52,10 +52,34 @@ export const sendMessage = async (req, res) => {
     }
 
     let imageUrl;
+    let uploadedAttachmentUrl = attachmentUrl;
+    let uploadedAttachmentType = attachmentType;
     if (image) {
       // upload base64 image to cloudinary
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
+    }
+
+    // If we received an attachment as a Data URL/base64, upload it to Cloudinary
+    if (attachmentUrl) {
+      try {
+        const upload = await cloudinary.uploader.upload(attachmentUrl, {
+          resource_type: "auto",
+        });
+        uploadedAttachmentUrl = upload.secure_url;
+        // Derive a mime-like type when possible (e.g., image/png, video/mp4, application/pdf)
+        if (!attachmentType) {
+          const possibleFormat = upload.format ? upload.format.toLowerCase() : undefined;
+          const resourceType = upload.resource_type; // image, video, raw
+          if (resourceType && possibleFormat) {
+            uploadedAttachmentType = `${resourceType === "raw" ? "application" : resourceType}/${possibleFormat}`;
+          } else if (resourceType) {
+            uploadedAttachmentType = resourceType;
+          }
+        }
+      } catch (err) {
+        console.error("Attachment upload failed:", err.message);
+      }
     }
 
     const newMessage = new Message({
@@ -63,6 +87,10 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
+      attachmentUrl: uploadedAttachmentUrl,
+      attachmentType: uploadedAttachmentType,
+      delivered: false,
+      seen: false,
     });
 
     await newMessage.save();
@@ -70,11 +98,35 @@ export const sendMessage = async (req, res) => {
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
+      await Message.updateOne({ _id: newMessage._id }, { $set: { delivered: true } });
+      io.to(receiverSocketId).emit("delivered", { messageId: newMessage._id });
     }
 
     res.status(201).json(newMessage);
   } catch (error) {
     console.log("Error in sendMessage controller: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const markAsSeen = async (req, res) => {
+  try {
+    const myId = req.user._id;
+    const { id: userToChatId } = req.params;
+
+    await Message.updateMany(
+      { senderId: userToChatId, receiverId: myId, seen: { $ne: true } },
+      { $set: { seen: true, seenAt: new Date() } }
+    );
+
+    const senderSocketId = getReceiverSocketId(userToChatId);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("seen", { by: myId.toString(), with: userToChatId.toString() });
+    }
+
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    console.log("Error in markAsSeen: ", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };

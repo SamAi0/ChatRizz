@@ -1,11 +1,12 @@
 import { XIcon } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 
 function ChatHeader() {
   const { selectedUser, setSelectedUser } = useChatStore();
-  const { onlineUsers } = useAuthStore();
+  const { onlineUsers, socket } = useAuthStore();
+  const [isTyping, setIsTyping] = useState(false);
   const isOnline = onlineUsers.includes(selectedUser._id);
 
   useEffect(() => {
@@ -18,6 +19,24 @@ function ChatHeader() {
     // cleanup function
     return () => window.removeEventListener("keydown", handleEscKey);
   }, [setSelectedUser]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const onTyping = ({ from }) => {
+      if (from === selectedUser._id) setIsTyping(true);
+    };
+    const onStopTyping = ({ from }) => {
+      if (from === selectedUser._id) setIsTyping(false);
+    };
+    socket.on("typing", onTyping);
+    socket.on("stopTyping", onStopTyping);
+    const timeout = setInterval(() => setIsTyping(false), 4000);
+    return () => {
+      socket.off("typing", onTyping);
+      socket.off("stopTyping", onStopTyping);
+      clearInterval(timeout);
+    };
+  }, [socket, selectedUser]);
 
   return (
     <div
@@ -33,7 +52,9 @@ function ChatHeader() {
 
         <div>
           <h3 className="text-slate-200 font-medium">{selectedUser.fullName}</h3>
-          <p className="text-slate-400 text-sm">{isOnline ? "Online" : "Offline"}</p>
+          <p className="text-slate-400 text-sm">
+            {isTyping ? "typing…" : isOnline ? "Online" : "Offline"}
+          </p>
         </div>
       </div>
 
