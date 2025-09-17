@@ -16,6 +16,7 @@ import {
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import { useProfileStore } from "../store/useProfileStore";
+import { useThemeStore } from "../store/useThemeStore";
 
 const mouseClickSound = new Audio("/sounds/mouse-click.mp3");
 
@@ -23,6 +24,7 @@ function ProfileHeader() {
   const { logout, authUser, updateProfile } = useAuthStore();
   const { isSoundEnabled, toggleSound } = useChatStore();
   const { getProfile } = useProfileStore();
+  const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
   const [selectedImg, setSelectedImg] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -172,7 +174,7 @@ function ProfileHeader() {
             </button>
             
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-lg border border-slate-700 shadow-lg z-50">
+              <div className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-lg border border-slate-700 shadow-lg z-50">
                 <button
                   onClick={() => {
                     navigate("/profile");
@@ -182,6 +184,16 @@ function ProfileHeader() {
                 >
                   <UserIcon className="w-4 h-4" />
                   View Profile
+                </button>
+                <button
+                  onClick={() => {
+                    toggleTheme();
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                >
+                  <PaletteIcon className="w-4 h-4" />
+                  {theme === "dark" ? "Switch to Light" : "Switch to Dark"}
                 </button>
                 <button
                   onClick={() => {

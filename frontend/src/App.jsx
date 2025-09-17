@@ -7,24 +7,21 @@ import ProfileSettingsPage from "./pages/ProfileSettingsPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { useAuthStore } from "./store/useAuthStore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PageLoader from "./components/PageLoader";
+import { useThemeStore } from "./store/useThemeStore";
 
 import { Toaster } from "react-hot-toast";
 
 function App() {
   const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const { theme } = useThemeStore();
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  useEffect(() => {
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+  // theme is applied by the theme store on change and on load
 
   if (isCheckingAuth) return <PageLoader />;
 
@@ -35,14 +32,7 @@ function App() {
       <div className="absolute top-0 -left-4 size-96 bg-pink-500 opacity-20 blur-[100px]" />
       <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
 
-      <div className="absolute top-4 right-4 z-10">
-        <button
-          className="px-3 py-1 rounded bg-slate-800/50 text-slate-200 border border-slate-700/50"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
-        </button>
-      </div>
+      {/* Theme toggle moved into header menu */}
 
       <Routes>
         <Route path="/" element={authUser ? <ChatPage /> : <Navigate to={"/login"} />} />
