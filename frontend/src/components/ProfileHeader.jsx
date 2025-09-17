@@ -1,19 +1,51 @@
-import { useState, useRef } from "react";
-import { LogOutIcon, VolumeOffIcon, Volume2Icon } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  LogOutIcon, 
+  VolumeOffIcon, 
+  Volume2Icon, 
+  SettingsIcon, 
+  UserIcon, 
+  PaletteIcon, 
+  StarIcon, 
+  CrownIcon, 
+  ShieldCheckIcon, 
+  ActivityIcon,
+  ImageIcon
+} from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import { useProfileStore } from "../store/useProfileStore";
 
 const mouseClickSound = new Audio("/sounds/mouse-click.mp3");
 
 function ProfileHeader() {
   const { logout, authUser, updateProfile } = useAuthStore();
   const { isSoundEnabled, toggleSound } = useChatStore();
+  const { getProfile } = useProfileStore();
+  const navigate = useNavigate();
   const [selectedImg, setSelectedImg] = useState(null);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [statusText, setStatusText] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const fileInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -85,32 +117,140 @@ function ProfileHeader() {
               </div>
             ) : (
               <>
-                <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
-                  {authUser.fullName}
-                </h3>
-                <p className="text-slate-400 text-xs truncate max-w-[200px]">
-                  {authUser.statusText || "Available"}
-                </p>
+                <div 
+                  className="cursor-pointer flex items-center gap-2" 
+                  onClick={() => navigate("/profile")}
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate hover:text-cyan-400 transition-colors">
+                        {authUser.fullName}
+                      </h3>
+                      {/* Verification Badge */}
+                      {authUser.verification?.isVerified && (
+                        <ShieldCheckIcon className="w-4 h-4 text-cyan-400" title="Verified User" />
+                      )}
+                      {/* Premium Badge */}
+                      {authUser.verification?.badges?.some(badge => badge.type === 'professional') && (
+                        <CrownIcon className="w-4 h-4 text-yellow-400" title="Professional" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* Custom Status Emoji */}
+                      {authUser.customStatus?.emoji && (
+                        <span className="text-sm">{authUser.customStatus.emoji}</span>
+                      )}
+                      <p className="text-slate-400 text-xs truncate max-w-[200px]">
+                        {authUser.customStatus?.text || authUser.statusText || "Available"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
           </div>
         </div>
 
         {/* BUTTONS */}
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center">
           <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-slate-400 hover:text-slate-200 transition-colors text-xs"
             onClick={() => setEditing((v) => !v)}
+            title="Quick Edit"
           >
             Edit
           </button>
-          {/* LOGOUT BTN */}
-          <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
-            onClick={logout}
-          >
-            <LogOutIcon className="size-5" />
-          </button>
+          
+          {/* Quick Action Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              className="text-slate-400 hover:text-slate-200 transition-colors"
+              onClick={() => setShowDropdown(!showDropdown)}
+              title="More Options"
+            >
+              <StarIcon className="size-5" />
+            </button>
+            
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-lg border border-slate-700 shadow-lg z-50">
+                <button
+                  onClick={() => {
+                    navigate("/profile");
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-t-lg flex items-center gap-2"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  View Profile
+                </button>
+                <button
+                  onClick={() => {
+                    console.log("Advanced Editor clicked from header");
+                    // TODO: Open Advanced Editor
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                >
+                  <StarIcon className="w-4 h-4" />
+                  Advanced Edit
+                </button>
+                <button
+                  onClick={() => {
+                    console.log("Theme Customizer clicked from header");
+                    // TODO: Open Theme Customizer
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                >
+                  <PaletteIcon className="w-4 h-4" />
+                  Customize Theme
+                </button>
+                <button
+                  onClick={() => {
+                    console.log("Gallery clicked from header");
+                    // TODO: Open Gallery
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                >
+                  <ImageIcon className="w-4 h-4" />
+                  Gallery
+                </button>
+                <button
+                  onClick={() => {
+                    console.log("Activity clicked from header");
+                    // TODO: Open Activity Timeline
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                >
+                  <ActivityIcon className="w-4 h-4" />
+                  Activity
+                </button>
+                <hr className="border-slate-700" />
+                <button
+                  onClick={() => {
+                    navigate("/profile/settings");
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                >
+                  <SettingsIcon className="w-4 h-4" />
+                  Settings
+                </button>
+                <button
+                  onClick={() => {
+                    logout();
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-red-400 hover:bg-slate-700 rounded-b-lg flex items-center gap-2"
+                >
+                  <LogOutIcon className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* SOUND TOGGLE BTN */}
           <button
@@ -121,6 +261,7 @@ function ProfileHeader() {
               mouseClickSound.play().catch((error) => console.log("Audio play failed:", error));
               toggleSound();
             }}
+            title={isSoundEnabled ? "Disable Sound" : "Enable Sound"}
           >
             {isSoundEnabled ? (
               <Volume2Icon className="size-5" />
