@@ -14,11 +14,28 @@ import {
   MessageCircleIcon,
   UserIcon,
   SettingsIcon,
-  TrashIcon
+  TrashIcon,
+  PaletteIcon,
+  ImageIcon,
+  ActivityIcon,
+  StarIcon,
+  BriefcaseIcon,
+  GraduationCapIcon,
+  LanguagesIcon,
+  HeartIcon,
+  GlobeIcon,
+  BadgeIcon,
+  ShieldCheckIcon,
+  UploadIcon
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useProfileStore } from "../store/useProfileStore";
 import { useChatStore } from "../store/useChatStore";
+import AdvancedProfileEditor from "../components/AdvancedProfileEditor";
+import ProfileThemeCustomizer from "../components/ProfileThemeCustomizer";
+import ProfileGalleryManager from "../components/ProfileGalleryManager";
+import ProfileActivityTimeline from "../components/ProfileActivityTimeline";
+import { ProfileCompletenessIndicator } from "../components/ProfileValidation";
 import toast from "react-hot-toast";
 
 const ProfilePage = () => {
@@ -33,15 +50,22 @@ const ProfilePage = () => {
     isLoadingProfile, 
     isUpdatingProfile,
     isUploadingImage,
+    isUploadingBanner,
     getProfile, 
     getProfileStats,
+    getEnhancedProfileStats,
     updateProfile,
     updateProfilePicture,
-    deleteProfilePicture
+    deleteProfilePicture,
+    uploadProfileBanner
   } = useProfileStore();
   const { setSelectedUser } = useChatStore();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [showAdvancedEditor, setShowAdvancedEditor] = useState(false);
+  const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
+  const [showGalleryManager, setShowGalleryManager] = useState(false);
+  const [showActivityTimeline, setShowActivityTimeline] = useState(false);
   const [editForm, setEditForm] = useState({
     fullName: "",
     bio: "",
@@ -57,8 +81,8 @@ const ProfilePage = () => {
   useEffect(() => {
     const targetUserId = userId || "me";
     getProfile(targetUserId);
-    getProfileStats(targetUserId);
-  }, [userId, getProfile, getProfileStats]);
+    getEnhancedProfileStats(targetUserId);
+  }, [userId, getProfile, getEnhancedProfileStats]);
 
   useEffect(() => {
     if (profile && isEditing) {
@@ -106,6 +130,22 @@ const ProfilePage = () => {
       } catch (error) {
         console.error("Error deleting profile picture:", error);
       }
+    }
+  };
+
+  const handleUploadBanner = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    try {
+      await uploadProfileBanner(file);
+    } catch (error) {
+      console.error("Error uploading banner:", error);
     }
   };
 
@@ -204,6 +244,20 @@ const ProfilePage = () => {
                   >
                     <EditIcon className="w-4 h-4 mr-2 inline" />
                     Edit Profile
+                  </button>
+                  <button
+                    onClick={() => setShowAdvancedEditor(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <StarIcon className="w-4 h-4 mr-2 inline" />
+                    Advanced Edit
+                  </button>
+                  <button
+                    onClick={() => setShowThemeCustomizer(true)}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <PaletteIcon className="w-4 h-4 mr-2 inline" />
+                    Theme
                   </button>
                   <button
                     onClick={() => navigate("/profile/settings")}
@@ -341,6 +395,90 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Profile Banner */}
+        {(isOwnProfile || profile.profileBanner) && (
+          <div className="bg-slate-800/50 rounded-lg overflow-hidden border border-slate-700/50 relative">
+            {profile.profileBanner ? (
+              <img
+                src={profile.profileBanner}
+                alt="Profile Banner"
+                className="w-full h-48 object-cover"
+              />
+            ) : isOwnProfile ? (
+              <div className="w-full h-48 bg-gradient-to-r from-slate-700 to-slate-600 flex items-center justify-center">
+                <div className="text-center">
+                  <UploadIcon className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                  <p className="text-slate-300">Upload a banner image</p>
+                </div>
+              </div>
+            ) : null}
+            
+            {isOwnProfile && (
+              <>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUploadBanner}
+                  className="hidden"
+                  id="banner-upload"
+                />
+                <label
+                  htmlFor="banner-upload"
+                  className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-lg cursor-pointer transition-colors"
+                >
+                  {isUploadingBanner ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  ) : (
+                    <CameraIcon className="w-5 h-5 text-white" />
+                  )}
+                </label>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Quick Actions */}
+        {isOwnProfile && (
+          <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
+            <h3 className="text-lg font-semibold text-slate-200 mb-4">Quick Actions</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button
+                onClick={() => setShowGalleryManager(true)}
+                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <ImageIcon className="w-6 h-6 text-cyan-400 mb-1" />
+                <span className="text-sm text-slate-300">Gallery</span>
+              </button>
+              <button
+                onClick={() => setShowActivityTimeline(true)}
+                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <ActivityIcon className="w-6 h-6 text-green-400 mb-1" />
+                <span className="text-sm text-slate-300">Activity</span>
+              </button>
+              <button
+                onClick={() => setShowThemeCustomizer(true)}
+                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <PaletteIcon className="w-6 h-6 text-purple-400 mb-1" />
+                <span className="text-sm text-slate-300">Themes</span>
+              </button>
+              <button
+                onClick={() => setShowAdvancedEditor(true)}
+                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <StarIcon className="w-6 h-6 text-yellow-400 mb-1" />
+                <span className="text-sm text-slate-300">Advanced</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Completeness */}
+        {isOwnProfile && profile && (
+          <ProfileCompletenessIndicator profile={profile} />
+        )}
 
         {/* Profile Details */}
         <div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700/50">
@@ -501,6 +639,33 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+    
+      {/* Advanced Profile Editor Modal */}
+      <AdvancedProfileEditor
+        isOpen={showAdvancedEditor}
+        onClose={() => setShowAdvancedEditor(false)}
+        initialData={profile}
+      />
+    
+      {/* Theme Customizer Modal */}
+      <ProfileThemeCustomizer
+        isOpen={showThemeCustomizer}
+        onClose={() => setShowThemeCustomizer(false)}
+        currentTheme={profile?.profileTheme}
+      />
+    
+      {/* Gallery Manager Modal */}
+      <ProfileGalleryManager
+        isOpen={showGalleryManager}
+        onClose={() => setShowGalleryManager(false)}
+        gallery={profile?.profileGallery || []}
+      />
+    
+      {/* Activity Timeline Modal */}
+      <ProfileActivityTimeline
+        isOpen={showActivityTimeline}
+        onClose={() => setShowActivityTimeline(false)}
+      />
     </div>
   );
 };
