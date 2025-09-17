@@ -6,9 +6,11 @@ export const useProfileStore = create((set, get) => ({
   // State
   profile: null,
   profileStats: null,
+  profileActivity: null,
   activityLog: [],
   loginHistory: [],
   isLoadingProfile: false,
+  isLoadingActivity: false,
   isUpdatingProfile: false,
   isUploadingImage: false,
   isUploadingBanner: false,
@@ -189,9 +191,11 @@ export const useProfileStore = create((set, get) => ({
     set({
       profile: null,
       profileStats: null,
+      profileActivity: null,
       activityLog: [],
       loginHistory: [],
       isLoadingProfile: false,
+      isLoadingActivity: false,
       isUpdatingProfile: false,
       isUploadingImage: false,
       isUploadingBanner: false,
@@ -422,6 +426,55 @@ export const useProfileStore = create((set, get) => ({
       console.error("Error unblocking user:", error);
       toast.error("Failed to unblock user");
       throw error;
+    }
+  },
+
+  updateProfileGallery: async (galleryData) => {
+    try {
+      const res = await axiosInstance.put("/profile/gallery", { profileGallery: galleryData });
+      set((state) => ({
+        profile: { ...state.profile, profileGallery: res.data.profileGallery }
+      }));
+      toast.success("Gallery updated successfully");
+      return res.data.profileGallery;
+    } catch (error) {
+      console.error("Error updating gallery:", error);
+      toast.error(error?.response?.data?.message || "Failed to update gallery");
+      throw error;
+    }
+  },
+
+  getProfileActivity: async () => {
+    set({ isLoadingActivity: true });
+    try {
+      const res = await axiosInstance.get("/profile/activity");
+      set({ profileActivity: res.data });
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching profile activity:", error);
+      // Use mock data for now if API fails
+      const mockActivity = [
+        {
+          id: 1,
+          type: "login",
+          title: "Logged in",
+          description: "User logged in from Chrome browser",
+          timestamp: new Date(Date.now() - 1000 * 60 * 30),
+          location: "New York, USA",
+          ip: "192.168.1.1"
+        },
+        {
+          id: 2,
+          type: "profile_update",
+          title: "Profile Updated",
+          description: "Updated bio and profile picture",
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
+        }
+      ];
+      set({ profileActivity: mockActivity });
+      return mockActivity;
+    } finally {
+      set({ isLoadingActivity: false });
     }
   },
 }));

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   LogOutIcon, 
@@ -31,6 +31,21 @@ function ProfileHeader() {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const fileInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -147,7 +162,7 @@ function ProfileHeader() {
           </button>
           
           {/* Quick Action Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               className="text-slate-400 hover:text-slate-200 transition-colors"
               onClick={() => setShowDropdown(!showDropdown)}
@@ -170,6 +185,7 @@ function ProfileHeader() {
                 </button>
                 <button
                   onClick={() => {
+                    console.log("Advanced Editor clicked from header");
                     // TODO: Open Advanced Editor
                     setShowDropdown(false);
                   }}
@@ -180,6 +196,7 @@ function ProfileHeader() {
                 </button>
                 <button
                   onClick={() => {
+                    console.log("Theme Customizer clicked from header");
                     // TODO: Open Theme Customizer
                     setShowDropdown(false);
                   }}
@@ -190,6 +207,7 @@ function ProfileHeader() {
                 </button>
                 <button
                   onClick={() => {
+                    console.log("Gallery clicked from header");
                     // TODO: Open Gallery
                     setShowDropdown(false);
                   }}
@@ -200,6 +218,7 @@ function ProfileHeader() {
                 </button>
                 <button
                   onClick={() => {
+                    console.log("Activity clicked from header");
                     // TODO: Open Activity Timeline
                     setShowDropdown(false);
                   }}

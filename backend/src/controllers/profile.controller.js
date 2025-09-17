@@ -942,7 +942,9 @@ export const unblockUser = async (req, res) => {
 export const getEnhancedProfileStats = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id);
+    const userId = id === "me" ? req.user._id : id;
+    
+    const user = await User.findById(userId);
     
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -951,7 +953,7 @@ export const getEnhancedProfileStats = async (req, res) => {
     const stats = user.getProfileStats();
     
     // Add message count
-    const messageCount = await Message.countDocuments({ senderId: id });
+    const messageCount = await Message.countDocuments({ senderId: userId });
     stats.messageCount = messageCount;
 
     res.status(200).json(stats);

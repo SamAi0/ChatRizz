@@ -1,47 +1,75 @@
-import { useState, useRef } from "react";
-import { ImageIcon, PlusIcon, XIcon, EyeIcon, EyeOffIcon, TrashIcon } from "lucide-react";
+import { useState } from "react";
+import { XIcon, UploadIcon, TrashIcon, ImageIcon, PlusIcon } from "lucide-react";
 import { useProfileStore } from "../store/useProfileStore";
 import toast from "react-hot-toast";
 
 const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
-  const { addGalleryImage, removeGalleryImage } = useProfileStore();
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  const { updateProfileGallery, isUpdatingProfile } = useProfileStore();
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [uploadingImages, setUploadingImages] = useState([]);
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size must be less than 5MB");
-      return;
-    }
+    setUploadingImages(files);
 
-    if (gallery.length >= 10) {
-      toast.error("Gallery can contain maximum 10 images");
-      return;
-    }
-
-    setIsUploading(true);
     try {
-      const caption = prompt("Add a caption for this image (optional):");
-      const isPublic = confirm("Make this image public?");
-      await addGalleryImage(file, caption || "", isPublic);
+      const uploadedImages = [];
+      
+      for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error(`${file.name} is too large. Maximum size is 5MB.`);
+          continue;
+        }
+
+        // Convert to base64 for upload
+        const base64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+
+        uploadedImages.push({
+          id: Date.now() + Math.random(),
+          url: base64,
+          name: file.name,
+          uploadedAt: new Date().toISOString()
+        });
+      }
+
+      const newGallery = [...gallery, ...uploadedImages];
+      await updateProfileGallery(newGallery);
+      toast.success(`${uploadedImages.length} image(s) uploaded successfully!`);
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("Error uploading images:", error);
+      toast.error("Failed to upload images");
     } finally {
-      setIsUploading(false);
+      setUploadingImages([]);
     }
   };
 
-  const handleRemoveImage = async (imageId) => {
-    if (confirm("Are you sure you want to remove this image?")) {
-      try {
-        await removeGalleryImage(imageId);
-      } catch (error) {
-        console.error("Error removing image:", error);
-      }
+  const handleDeleteImages = async () => {
+    if (selectedImages.length === 0) return;
+
+    const updatedGallery = gallery.filter(img => !selectedImages.includes(img.id));
+    
+    try {
+      await updateProfileGallery(updatedGallery);
+      setSelectedImages([]);
+      toast.success(`${selectedImages.length} image(s) deleted successfully!`);
+    } catch (error) {
+      console.error("Error deleting images:", error);
+      toast.error("Failed to delete images");
     }
+  };
+
+  const toggleImageSelection = (imageId) => {
+    setSelectedImages(prev => 
+      prev.includes(imageId) 
+        ? prev.filter(id => id !== imageId)
+        : [...prev, imageId]
+    );
   };
 
   if (!isOpen) return null;
@@ -49,109 +77,141 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-slate-800 rounded-lg border border-slate-700 max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
         <div className="p-6 border-b border-slate-700 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-200 flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
-            Profile Gallery
+            Gallery Manager
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
-            <XIcon className="w-5 h-5" />
+          <button onClick={onClose} className="p-2 hover:bg-slate-700 rounded-lg transition-colors">
+            <XIcon className="w-5 h-5 text-slate-400" />
           </button>
         </div>
 
-        <div className="p-6">
-          {/* Upload Section */}
-          <div className="mb-6">
-            <button
-              onClick={() => fileInputRef.current.click()}
-              disabled={isUploading || gallery.length >= 10}
-              className="w-full p-8 border-2 border-dashed border-slate-600 rounded-lg hover:border-slate-500 transition-colors disabled:opacity-50"
-            >
-              <div className="text-center">
-                {isUploading ? (
-                  <div className="animate-spin mx-auto w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full mb-4" />
-                ) : (
-                  <PlusIcon className="w-8 h-8 text-slate-400 mx-auto mb-4" />
-                )}
-                <p className="text-slate-300">
-                  {isUploading ? "Uploading..." : "Click to add new image"}
-                </p>
-                <p className="text-slate-500 text-sm mt-1">
-                  {gallery.length}/10 images ({10 - gallery.length} remaining)
-                </p>
-              </div>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
+        {/* Toolbar */}
+        <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <label className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors cursor-pointer">
+              <UploadIcon className="w-4 h-4 mr-2 inline" />
+              Upload Images
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+            
+            {selectedImages.length > 0 && (
+              <button
+                onClick={handleDeleteImages}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <TrashIcon className="w-4 h-4 mr-2 inline" />
+                Delete Selected ({selectedImages.length})
+              </button>
+            )}
           </div>
+          
+          <div className="text-sm text-slate-400">
+            {gallery.length} image(s) in gallery
+          </div>
+        </div>
 
-          {/* Gallery Grid */}
-          {gallery.length > 0 ? (
+        {/* Gallery Grid */}
+        <div className="p-6 overflow-y-auto max-h-[60vh]">
+          {gallery.length === 0 ? (
+            <div className="text-center py-12">
+              <ImageIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-300 mb-2">No images yet</h3>
+              <p className="text-slate-400 mb-4">Upload some images to get started</p>
+              <label className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors cursor-pointer">
+                <PlusIcon className="w-4 h-4 mr-2" />
+                Add Images
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {gallery.map((image, index) => (
-                <div key={image._id || index} className="relative group">
-                  <div className="aspect-square rounded-lg overflow-hidden bg-slate-700">
+              {gallery.map((image) => (
+                <div
+                  key={image.id}
+                  className={`relative group rounded-lg overflow-hidden border-2 transition-colors ${
+                    selectedImages.includes(image.id) 
+                      ? 'border-cyan-500' 
+                      : 'border-slate-600 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="aspect-square">
                     <img
                       src={image.url}
-                      alt={image.caption || `Gallery image ${index + 1}`}
+                      alt={image.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   
                   {/* Overlay */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <div className="bg-slate-800 rounded-full p-1">
-                        {image.isPublic ? (
-                          <EyeIcon className="w-4 h-4 text-green-400" />
-                        ) : (
-                          <EyeOffIcon className="w-4 h-4 text-yellow-400" />
-                        )}
-                      </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors">
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => handleRemoveImage(image._id)}
-                        className="bg-red-600 hover:bg-red-700 rounded-full p-1 transition-colors"
+                        onClick={() => toggleImageSelection(image.id)}
+                        className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                          selectedImages.includes(image.id)
+                            ? 'bg-cyan-500 border-cyan-500'
+                            : 'bg-transparent border-white'
+                        }`}
                       >
-                        <TrashIcon className="w-4 h-4 text-white" />
+                        {selectedImages.includes(image.id) && (
+                          <span className="text-white text-xs">✓</span>
+                        )}
                       </button>
                     </div>
-                    
-                    {image.caption && (
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="text-white text-sm bg-black/70 rounded px-2 py-1 truncate">
-                          {image.caption}
-                        </p>
-                      </div>
-                    )}
                   </div>
                   
-                  {/* Upload Date */}
-                  <p className="text-slate-400 text-xs mt-1">
-                    {new Date(image.uploadedAt).toLocaleDateString()}
-                  </p>
+                  {/* Image info */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="text-xs truncate">{image.name}</div>
+                    <div className="text-xs text-gray-300">
+                      {new Date(image.uploadedAt).toLocaleDateString()}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <ImageIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400">No images in your gallery yet</p>
-              <p className="text-slate-500 text-sm">Upload your first image to get started</p>
+          )}
+          
+          {/* Upload progress */}
+          {uploadingImages.length > 0 && (
+            <div className="mt-6 p-4 bg-slate-700/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-500"></div>
+                <span className="text-slate-200">Uploading {uploadingImages.length} image(s)...</span>
+              </div>
+              <div className="space-y-1">
+                {uploadingImages.map((file, index) => (
+                  <div key={index} className="text-sm text-slate-400">
+                    {file.name}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
+        {/* Footer */}
         <div className="p-6 border-t border-slate-700 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+            className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
           >
-            Done
+            Close
           </button>
         </div>
       </div>

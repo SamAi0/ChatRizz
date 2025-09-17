@@ -26,7 +26,9 @@ import {
   GlobeIcon,
   BadgeIcon,
   ShieldCheckIcon,
-  UploadIcon
+  UploadIcon,
+  MoreVerticalIcon,
+  ChevronDownIcon
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useProfileStore } from "../store/useProfileStore";
@@ -35,7 +37,6 @@ import AdvancedProfileEditor from "../components/AdvancedProfileEditor";
 import ProfileThemeCustomizer from "../components/ProfileThemeCustomizer";
 import ProfileGalleryManager from "../components/ProfileGalleryManager";
 import ProfileActivityTimeline from "../components/ProfileActivityTimeline";
-import { ProfileCompletenessIndicator } from "../components/ProfileValidation";
 import toast from "react-hot-toast";
 
 const ProfilePage = () => {
@@ -66,6 +67,8 @@ const ProfilePage = () => {
   const [showThemeCustomizer, setShowThemeCustomizer] = useState(false);
   const [showGalleryManager, setShowGalleryManager] = useState(false);
   const [showActivityTimeline, setShowActivityTimeline] = useState(false);
+  const [showDropdownMenu, setShowDropdownMenu] = useState(false);
+  const dropdownRef = useRef(null);
   const [editForm, setEditForm] = useState({
     fullName: "",
     bio: "",
@@ -81,7 +84,12 @@ const ProfilePage = () => {
   useEffect(() => {
     const targetUserId = userId || "me";
     getProfile(targetUserId);
-    getEnhancedProfileStats(targetUserId);
+    // Use the actual user ID for enhanced stats, not "me"
+    if (targetUserId === "me") {
+      getEnhancedProfileStats("me");
+    } else {
+      getEnhancedProfileStats(targetUserId);
+    }
   }, [userId, getProfile, getEnhancedProfileStats]);
 
   useEffect(() => {
@@ -149,10 +157,50 @@ const ProfilePage = () => {
     }
   };
 
+  // Add click handlers for debugging
+  const handleBackClick = (e) => {
+    console.log("Back button clicked");
+    navigate("/");
+  };
+
+  const handleEditClick = (e) => {
+    console.log("Edit button clicked");
+    setIsEditing(true);
+  };
+
+  const handleAdvancedEditClick = (e) => {
+    console.log("Advanced edit button clicked");
+    setShowAdvancedEditor(true);
+  };
+
+  const handleThemeClick = (e) => {
+    console.log("Theme button clicked");
+    setShowThemeCustomizer(true);
+  };
+
+  const handleSettingsClick = (e) => {
+    console.log("Settings button clicked");
+    navigate("/profile/settings");
+  };
+
   const handleStartChat = () => {
     setSelectedUser(profile);
     navigate("/");
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdownMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -206,7 +254,7 @@ const ProfilePage = () => {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("/")}
+              onClick={handleBackClick}
               className="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5 text-slate-200" />
@@ -239,33 +287,94 @@ const ProfilePage = () => {
               ) : (
                 <>
                   <button
-                    onClick={() => setIsEditing(true)}
+                    onClick={handleEditClick}
                     className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
                   >
                     <EditIcon className="w-4 h-4 mr-2 inline" />
                     Edit Profile
                   </button>
-                  <button
-                    onClick={() => setShowAdvancedEditor(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <StarIcon className="w-4 h-4 mr-2 inline" />
-                    Advanced Edit
-                  </button>
-                  <button
-                    onClick={() => setShowThemeCustomizer(true)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <PaletteIcon className="w-4 h-4 mr-2 inline" />
-                    Theme
-                  </button>
-                  <button
-                    onClick={() => navigate("/profile/settings")}
-                    className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
-                  >
-                    <SettingsIcon className="w-4 h-4 mr-2 inline" />
-                    Settings
-                  </button>
+                  
+                  {/* 3-dot Menu */}
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => {
+                        console.log("3-dot menu clicked");
+                        setShowDropdownMenu(!showDropdownMenu);
+                      }}
+                      className="p-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                      <MoreVerticalIcon className="w-5 h-5" />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {showDropdownMenu && (
+                      <div className="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50">
+                        <div className="py-2">
+                          <button
+                            onClick={() => {
+                              console.log("Advanced edit clicked from menu");
+                              setShowAdvancedEditor(true);
+                              setShowDropdownMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3"
+                          >
+                            <StarIcon className="w-4 h-4 text-yellow-400" />
+                            Advanced Edit
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              console.log("Theme clicked from menu");
+                              setShowThemeCustomizer(true);
+                              setShowDropdownMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3"
+                          >
+                            <PaletteIcon className="w-4 h-4 text-purple-400" />
+                            Customize Theme
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              console.log("Gallery clicked from menu");
+                              setShowGalleryManager(true);
+                              setShowDropdownMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3"
+                          >
+                            <ImageIcon className="w-4 h-4 text-cyan-400" />
+                            Manage Gallery
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              console.log("Activity clicked from menu");
+                              setShowActivityTimeline(true);
+                              setShowDropdownMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3"
+                          >
+                            <ActivityIcon className="w-4 h-4 text-green-400" />
+                            View Activity
+                          </button>
+                          
+                          <div className="border-t border-slate-700 my-1"></div>
+                          
+                          <button
+                            onClick={() => {
+                              console.log("Settings clicked from menu");
+                              navigate("/profile/settings");
+                              setShowDropdownMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-slate-200 hover:bg-slate-700 transition-colors flex items-center gap-3"
+                          >
+                            <SettingsIcon className="w-4 h-4 text-slate-400" />
+                            Settings
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </div>
@@ -436,48 +545,6 @@ const ProfilePage = () => {
               </>
             )}
           </div>
-        )}
-
-        {/* Quick Actions */}
-        {isOwnProfile && (
-          <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
-            <h3 className="text-lg font-semibold text-slate-200 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <button
-                onClick={() => setShowGalleryManager(true)}
-                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <ImageIcon className="w-6 h-6 text-cyan-400 mb-1" />
-                <span className="text-sm text-slate-300">Gallery</span>
-              </button>
-              <button
-                onClick={() => setShowActivityTimeline(true)}
-                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <ActivityIcon className="w-6 h-6 text-green-400 mb-1" />
-                <span className="text-sm text-slate-300">Activity</span>
-              </button>
-              <button
-                onClick={() => setShowThemeCustomizer(true)}
-                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <PaletteIcon className="w-6 h-6 text-purple-400 mb-1" />
-                <span className="text-sm text-slate-300">Themes</span>
-              </button>
-              <button
-                onClick={() => setShowAdvancedEditor(true)}
-                className="flex flex-col items-center p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <StarIcon className="w-6 h-6 text-yellow-400 mb-1" />
-                <span className="text-sm text-slate-300">Advanced</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Profile Completeness */}
-        {isOwnProfile && profile && (
-          <ProfileCompletenessIndicator profile={profile} />
         )}
 
         {/* Profile Details */}
