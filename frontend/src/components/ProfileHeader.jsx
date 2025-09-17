@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { LogOutIcon, VolumeOffIcon, Volume2Icon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { LogOutIcon, VolumeOffIcon, Volume2Icon, SettingsIcon, UserIcon } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
@@ -8,6 +9,7 @@ const mouseClickSound = new Audio("/sounds/mouse-click.mp3");
 function ProfileHeader() {
   const { logout, authUser, updateProfile } = useAuthStore();
   const { isSoundEnabled, toggleSound } = useChatStore();
+  const navigate = useNavigate();
   const [selectedImg, setSelectedImg] = useState(null);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
@@ -85,29 +87,53 @@ function ProfileHeader() {
               </div>
             ) : (
               <>
-                <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
-                  {authUser.fullName}
-                </h3>
-                <p className="text-slate-400 text-xs truncate max-w-[200px]">
-                  {authUser.statusText || "Available"}
-                </p>
+                <div 
+                  className="cursor-pointer" 
+                  onClick={() => navigate("/profile")}
+                >
+                  <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate hover:text-cyan-400 transition-colors">
+                    {authUser.fullName}
+                  </h3>
+                  <p className="text-slate-400 text-xs truncate max-w-[200px]">
+                    {authUser.statusText || "Available"}
+                  </p>
+                </div>
               </>
             )}
           </div>
         </div>
 
         {/* BUTTONS */}
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 items-center">
           <button
             className="text-slate-400 hover:text-slate-200 transition-colors"
             onClick={() => setEditing((v) => !v)}
+            title="Quick Edit"
           >
             Edit
           </button>
+          
+          <button
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+            onClick={() => navigate("/profile")}
+            title="View Profile"
+          >
+            <UserIcon className="size-5" />
+          </button>
+          
+          <button
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+            onClick={() => navigate("/profile/settings")}
+            title="Profile Settings"
+          >
+            <SettingsIcon className="size-5" />
+          </button>
+          
           {/* LOGOUT BTN */}
           <button
             className="text-slate-400 hover:text-slate-200 transition-colors"
             onClick={logout}
+            title="Logout"
           >
             <LogOutIcon className="size-5" />
           </button>
@@ -121,6 +147,7 @@ function ProfileHeader() {
               mouseClickSound.play().catch((error) => console.log("Audio play failed:", error));
               toggleSound();
             }}
+            title={isSoundEnabled ? "Disable Sound" : "Enable Sound"}
           >
             {isSoundEnabled ? (
               <Volume2Icon className="size-5" />
