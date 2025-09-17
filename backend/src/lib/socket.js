@@ -7,9 +7,13 @@ import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 const app = express();
 const server = http.createServer(app);
 
+const allowedSocketOrigins = [];
+if (ENV.CLIENT_URL) allowedSocketOrigins.push(ENV.CLIENT_URL);
+if (ENV.NODE_ENV !== "production") allowedSocketOrigins.push("http://localhost:5173");
+
 const io = new Server(server, {
   cors: {
-    origin: [ENV.CLIENT_URL],
+    origin: allowedSocketOrigins,
     credentials: true,
   },
 });
@@ -26,7 +30,7 @@ export function getReceiverSocketId(userId) {
 const userSocketMap = {}; // {userId:socketId}
 
 io.on("connection", (socket) => {
-  console.log("A user connected", socket.user.fullName);
+  console.log("A user connected", socket.user?.fullName || socket.id);
 
   const userId = socket.userId;
   userSocketMap[userId] = socket.id;
