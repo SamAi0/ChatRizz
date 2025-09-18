@@ -46,6 +46,8 @@ const ProfileSettingsPage = () => {
     soundEnabled: true,
     notificationsEnabled: true,
     language: "en",
+    preferredLanguage: "en",
+    autoTranslate: true,
     emailNotifications: true,
   });
 
@@ -88,8 +90,10 @@ const ProfileSettingsPage = () => {
   const handlePreferencesUpdate = async () => {
     try {
       await updatePreferences(preferences);
+      toast.success("Preferences updated successfully!");
     } catch (error) {
       console.error("Error updating preferences:", error);
+      toast.error("Failed to update preferences");
     }
   };
 
@@ -350,7 +354,7 @@ const ProfileSettingsPage = () => {
                     </div>
 
                     <div className="p-4 bg-slate-700/30 rounded-lg">
-                      <h3 className="text-slate-200 font-medium mb-2">Language</h3>
+                      <h3 className="text-slate-200 font-medium mb-2">Interface Language</h3>
                       <select
                         value={preferences.language}
                         onChange={(e) => setPreferences({
@@ -363,6 +367,38 @@ const ProfileSettingsPage = () => {
                         <option value="es">Spanish</option>
                         <option value="fr">French</option>
                         <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="zh">Chinese</option>
+                      </select>
+                    </div>
+
+                    <div className="p-4 bg-slate-700/30 rounded-lg">
+                      <h3 className="text-slate-200 font-medium mb-2">Preferred Message Language</h3>
+                      <p className="text-slate-400 text-sm mb-3">Messages will be automatically translated to this language</p>
+                      <select
+                        value={preferences.preferredLanguage || 'en'}
+                        onChange={(e) => setPreferences({
+                          ...preferences,
+                          preferredLanguage: e.target.value
+                        })}
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                      >
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ar">Arabic</option>
+                        <option value="hi">Hindi</option>
                       </select>
                     </div>
 
@@ -378,6 +414,25 @@ const ProfileSettingsPage = () => {
                           onChange={(e) => setPreferences({
                             ...preferences,
                             soundEnabled: e.target.checked
+                          })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300 dark:peer-focus:ring-cyan-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg">
+                      <div>
+                        <h3 className="text-slate-200 font-medium">Auto-Translate Messages</h3>
+                        <p className="text-slate-400 text-sm">Automatically translate incoming messages to your preferred language</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferences.autoTranslate !== false}
+                          onChange={(e) => setPreferences({
+                            ...preferences,
+                            autoTranslate: e.target.checked
                           })}
                           className="sr-only peer"
                         />

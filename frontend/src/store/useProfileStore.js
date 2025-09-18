@@ -59,9 +59,11 @@ export const useProfileStore = create((set, get) => ({
   },
 
   updateProfile: async (profileData) => {
+    console.log("updateProfile called with data:", profileData);
     set({ isUpdatingProfile: true });
     try {
       const res = await axiosInstance.put("/profile/update", profileData);
+      console.log("updateProfile API response:", res.data);
       set((state) => ({
         profile: { ...state.profile, ...res.data }
       }));
@@ -69,6 +71,7 @@ export const useProfileStore = create((set, get) => ({
       return res.data;
     } catch (error) {
       console.error("Error updating profile:", error);
+      console.error("Error response:", error?.response);
       toast.error(error?.response?.data?.message || "Failed to update profile");
       throw error;
     } finally {
@@ -431,12 +434,13 @@ export const useProfileStore = create((set, get) => ({
 
   updateProfileGallery: async (galleryData) => {
     try {
-      const res = await axiosInstance.put("/profile/gallery", { profileGallery: galleryData });
+      // Since we don't have a bulk update endpoint, we'll update the profile with the gallery data
+      const res = await axiosInstance.put("/profile/update", { profileGallery: galleryData });
       set((state) => ({
-        profile: { ...state.profile, profileGallery: res.data.profileGallery }
+        profile: { ...state.profile, profileGallery: res.data.profileGallery || galleryData }
       }));
       toast.success("Gallery updated successfully");
-      return res.data.profileGallery;
+      return res.data.profileGallery || galleryData;
     } catch (error) {
       console.error("Error updating gallery:", error);
       toast.error(error?.response?.data?.message || "Failed to update gallery");

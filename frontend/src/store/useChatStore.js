@@ -9,6 +9,8 @@ export const useChatStore = create((set, get) => ({
   messages: [],
   activeTab: "chats",
   selectedUser: null,
+  profileUser: null,
+  isProfileSidebarOpen: false,
   isUsersLoading: false,
   isMessagesLoading: false,
   isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
@@ -20,6 +22,18 @@ export const useChatStore = create((set, get) => ({
 
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSelectedUser: (selectedUser) => set({ selectedUser }),
+  
+  // Profile sidebar management
+  openProfileSidebar: (user) => set({ profileUser: user, isProfileSidebarOpen: true }),
+  closeProfileSidebar: () => set({ isProfileSidebarOpen: false, profileUser: null }),
+  toggleProfileSidebar: (user) => {
+    const { isProfileSidebarOpen, profileUser } = get();
+    if (isProfileSidebarOpen && profileUser?._id === user?._id) {
+      set({ isProfileSidebarOpen: false, profileUser: null });
+    } else {
+      set({ profileUser: user, isProfileSidebarOpen: true });
+    }
+  },
 
   getAllContacts: async () => {
     set({ isUsersLoading: true });
@@ -27,7 +41,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/contacts");
       set({ allContacts: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to load contacts");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -38,7 +52,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/chats");
       set({ chats: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to load chat partners");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -75,15 +89,20 @@ export const useChatStore = create((set, get) => ({
       createdAt: new Date().toISOString(),
       isOptimistic: true, // flag to identify optimistic messages (optional)
     };
-    // immidetaly update the ui by adding the message
+    // immediately update the ui by adding the message
     set({ messages: [...messages, optimisticMessage] });
 
     try {
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-      set({ messages: messages.concat(res.data) });
+      // Replace the optimistic message with the real one from server
+      const updatedMessages = get().messages.map(msg => 
+        msg._id === tempId ? res.data : msg
+      );
+      set({ messages: updatedMessages });
     } catch (error) {
       // remove optimistic message on failure
-      set({ messages: messages });
+      const filteredMessages = get().messages.filter(msg => msg._id !== tempId);
+      set({ messages: filteredMessages });
       toast.error(error.response?.data?.message || "Something went wrong");
     }
   },

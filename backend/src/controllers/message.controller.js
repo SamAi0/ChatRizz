@@ -1,7 +1,31 @@
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
+import { translateText } from "../lib/openai.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
+
+// Test translation endpoint (for development)
+export const testTranslation = async (req, res) => {
+  try {
+    const { text, targetLanguage = "es" } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ message: "Text is required" });
+    }
+
+    const result = await translateText({ text, targetLanguage });
+    
+    res.status(200).json({
+      original: text,
+      translated: result.translatedText,
+      isTranslated: result.translatedText !== text,
+      note: result.note
+    });
+  } catch (error) {
+    console.error("Error in testTranslation:", error);
+    res.status(500).json({ error: "Translation test failed" });
+  }
+};
 
 export const getAllContacts = async (req, res) => {
   try {
@@ -82,10 +106,39 @@ export const sendMessage = async (req, res) => {
       }
     }
 
+    // Get sender and receiver user data for translation
+    const [sender, receiver] = await Promise.all([
+      User.findById(senderId).select("preferences.preferredLanguage preferences.autoTranslate"),
+      User.findById(receiverId).select("preferences.preferredLanguage preferences.autoTranslate")
+    ]);
+
+    // Translate message if needed
+    let translatedText = text;
+    let isTranslated = false;
+    
+    if (text && sender && receiver && 
+        receiver.preferences?.autoTranslate !== false && 
+        sender.preferences?.preferredLanguage !== receiver.preferences?.preferredLanguage) {
+      
+      try {
+        const translation = await translateText({
+          text,
+          targetLanguage: receiver.preferences.preferredLanguage || 'en'
+        });
+        translatedText = translation.translatedText;
+        isTranslated = true;
+      } catch (error) {
+        console.log("Translation failed, using original text:", error.message);
+        // Fallback to original text if translation fails
+      }
+    }
+
     const newMessage = new Message({
       senderId,
       receiverId,
-      text,
+      text: translatedText,
+      originalText: isTranslated ? text : undefined,
+      isTranslated,
       image: imageUrl,
       attachmentUrl: uploadedAttachmentUrl,
       attachmentType: uploadedAttachmentType,

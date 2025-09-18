@@ -356,6 +356,15 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: "en",
       },
+      preferredLanguage: {
+        type: String,
+        default: "en",
+        maxlength: 10,
+      },
+      autoTranslate: {
+        type: Boolean,
+        default: true,
+      },
       emailNotifications: {
         type: Boolean,
         default: true,

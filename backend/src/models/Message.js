@@ -17,6 +17,15 @@ const messageSchema = new mongoose.Schema(
       trim: true,
       maxlength: 2000,
     },
+    originalText: {
+      type: String,
+      trim: true,
+      maxlength: 2000,
+    },
+    isTranslated: {
+      type: Boolean,
+      default: false,
+    },
     image: {
       type: String,
     },

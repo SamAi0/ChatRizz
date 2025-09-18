@@ -4,7 +4,7 @@ import { useProfileStore } from "../store/useProfileStore";
 import toast from "react-hot-toast";
 
 const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
-  const { updateProfileGallery, isUpdatingProfile } = useProfileStore();
+  const { addGalleryImage, removeGalleryImage, isUpdatingProfile } = useProfileStore();
   const [selectedImages, setSelectedImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState([]);
 
@@ -15,8 +15,6 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
     setUploadingImages(files);
 
     try {
-      const uploadedImages = [];
-      
       for (const file of files) {
         if (file.size > 5 * 1024 * 1024) {
           toast.error(`${file.name} is too large. Maximum size is 5MB.`);
@@ -30,17 +28,10 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
           reader.readAsDataURL(file);
         });
 
-        uploadedImages.push({
-          id: Date.now() + Math.random(),
-          url: base64,
-          name: file.name,
-          uploadedAt: new Date().toISOString()
-        });
+        await addGalleryImage(file, file.name, true);
       }
 
-      const newGallery = [...gallery, ...uploadedImages];
-      await updateProfileGallery(newGallery);
-      toast.success(`${uploadedImages.length} image(s) uploaded successfully!`);
+      toast.success(`${files.length} image(s) uploaded successfully!`);
     } catch (error) {
       console.error("Error uploading images:", error);
       toast.error("Failed to upload images");
@@ -51,11 +42,11 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
 
   const handleDeleteImages = async () => {
     if (selectedImages.length === 0) return;
-
-    const updatedGallery = gallery.filter(img => !selectedImages.includes(img.id));
     
     try {
-      await updateProfileGallery(updatedGallery);
+      for (const imageId of selectedImages) {
+        await removeGalleryImage(imageId);
+      }
       setSelectedImages([]);
       toast.success(`${selectedImages.length} image(s) deleted successfully!`);
     } catch (error) {
@@ -140,11 +131,11 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {gallery.map((image) => (
+              {gallery.map((image, index) => (
                 <div
-                  key={image.id}
+                  key={image._id || image.id || index}
                   className={`relative group rounded-lg overflow-hidden border-2 transition-colors ${
-                    selectedImages.includes(image.id) 
+                    selectedImages.includes(image._id || image.id || index) 
                       ? 'border-cyan-500' 
                       : 'border-slate-600 hover:border-slate-500'
                   }`}
@@ -152,7 +143,7 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
                   <div className="aspect-square">
                     <img
                       src={image.url}
-                      alt={image.name}
+                      alt={image.caption || `Gallery image ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -161,14 +152,14 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors">
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => toggleImageSelection(image.id)}
+                        onClick={() => toggleImageSelection(image._id || image.id || index)}
                         className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
-                          selectedImages.includes(image.id)
+                          selectedImages.includes(image._id || image.id || index)
                             ? 'bg-cyan-500 border-cyan-500'
                             : 'bg-transparent border-white'
                         }`}
                       >
-                        {selectedImages.includes(image.id) && (
+                        {selectedImages.includes(image._id || image.id || index) && (
                           <span className="text-white text-xs">✓</span>
                         )}
                       </button>
@@ -177,9 +168,9 @@ const ProfileGalleryManager = ({ isOpen, onClose, gallery = [] }) => {
                   
                   {/* Image info */}
                   <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="text-xs truncate">{image.name}</div>
+                    <div className="text-xs truncate">{image.caption || `Image ${index + 1}`}</div>
                     <div className="text-xs text-gray-300">
-                      {new Date(image.uploadedAt).toLocaleDateString()}
+                      {new Date(image.uploadedAt || Date.now()).toLocaleDateString()}
                     </div>
                   </div>
                 </div>

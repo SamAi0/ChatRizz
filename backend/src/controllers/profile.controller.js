@@ -274,8 +274,6 @@ export const updateProfile = async (req, res) => {
     await updatedUser.addActivityLog('profile_updated', {
       fieldsUpdated: Object.keys(update)
     });
-    
-    await updatedUser.save();
 
     res.status(200).json({
       _id: updatedUser._id,

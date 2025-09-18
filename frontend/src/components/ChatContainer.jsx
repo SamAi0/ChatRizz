@@ -15,6 +15,7 @@ function ChatContainer() {
     isMessagesLoading,
     subscribeToMessages,
     unsubscribeFromMessages,
+    openProfileSidebar,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -43,13 +44,30 @@ function ChatContainer() {
             {messages.map((msg) => (
               <div
                 key={msg._id}
-                className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+                className={`chat ${msg.senderId === authUser._id ? "chat-end" : "chat-start"} group`}
               >
+                {/* Avatar for received messages */}
+                {msg.senderId !== authUser._id && (
+                  <div className="chat-image avatar">
+                    <button
+                      className="w-8 h-8 rounded-full overflow-hidden border border-slate-600 hover:border-cyan-500 transition-colors"
+                      onClick={() => openProfileSidebar ? openProfileSidebar(selectedUser) : null}
+                      title="View Profile"
+                    >
+                      <img
+                        src={selectedUser.profilePic || "/avatar.png"}
+                        alt={selectedUser.fullName}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  </div>
+                )}
+                
                 <div
-                  className={`chat-bubble relative ${
+                  className={`chat-bubble relative group-hover:shadow-lg transition-all duration-200 ${
                     msg.senderId === authUser._id
-                      ? "bg-cyan-600 text-white"
-                      : "bg-slate-800 text-slate-200"
+                      ? "bg-cyan-600 text-white shadow-cyan-600/20"
+                      : "bg-slate-800 text-slate-200 border border-slate-700/50"
                   }`}
                 >
                   {/* Inline image rendering for image messages or image attachments */}
@@ -72,18 +90,57 @@ function ChatContainer() {
                       {msg.attachmentType?.startsWith("video/") ? "View video" : "Open file"}
                     </a>
                   )}
-                  {msg.text && <p className="mt-2">{msg.text}</p>}
-                  <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
-                    {new Date(msg.createdAt).toLocaleTimeString(undefined, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                  {msg.text && (
+                    <div className="">
+                      <p className="leading-relaxed">{msg.text}</p>
+                      {msg.isTranslated && msg.originalText && (
+                        <div className="mt-2 pt-2 border-t border-white/10 text-xs opacity-80">
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center gap-1">
+                              🌐 Translated
+                            </span>
+                            <button
+                              onClick={(event) => {
+                                const textElement = event.target.closest('.chat-bubble').querySelector('p');
+                                if (textElement.textContent === msg.text) {
+                                  textElement.textContent = msg.originalText;
+                                  event.target.textContent = 'Show translation';
+                                } else {
+                                  textElement.textContent = msg.text;
+                                  event.target.textContent = 'Show original';
+                                }
+                              }}
+                              className="underline hover:no-underline text-xs"
+                            >
+                              Show original
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* Message Timestamp & Status */}
+                  <div className="flex items-center justify-between mt-2 pt-1 border-t border-white/5">
+                    <p className="text-xs opacity-70">
+                      {new Date(msg.createdAt).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                    
+                    {/* Message Status for Sent Messages */}
                     {msg.senderId === authUser._id && (
-                      <span className="ml-1">
-                        {msg.seen ? "✅✅" : msg.delivered ? "✅✅" : "✅"}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        {msg.seen ? (
+                          <span className="text-xs text-green-400" title="Seen">✓✓</span>
+                        ) : msg.delivered ? (
+                          <span className="text-xs text-slate-300" title="Delivered">✓✓</span>
+                        ) : (
+                          <span className="text-xs text-slate-400" title="Sent">✓</span>
+                        )}
+                      </div>
                     )}
-                  </p>
+                  </div>
                 </div>
               </div>
             ))}
