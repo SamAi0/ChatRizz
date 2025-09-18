@@ -115,6 +115,7 @@ function UserProfileSidebar({ isOpen, onClose, user }) {
         fixed right-0 top-0 h-full w-80 bg-slate-800/95 backdrop-blur-sm 
         border-l border-slate-700/50 z-50 transform transition-transform duration-300
         lg:relative lg:transform-none lg:z-auto
+        flex flex-col
         ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
       `}>
         {/* Header */}
