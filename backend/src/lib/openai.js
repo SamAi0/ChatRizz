@@ -1,12 +1,20 @@
 import OpenAI from "openai";
 import { ENV } from "./env.js";
 
-export const openai = new OpenAI({ apiKey: ENV.OPENAI_API_KEY });
+// Only create OpenAI instance if API key is available and valid
+function getOpenAIInstance() {
+  if (!ENV.OPENAI_API_KEY || ENV.OPENAI_API_KEY.startsWith('sk-temp-') || ENV.OPENAI_API_KEY === 'your_openai_api_key') {
+    return null;
+  }
+  return new OpenAI({ apiKey: ENV.OPENAI_API_KEY });
+}
+
+export const openai = getOpenAIInstance();
 
 export async function translateText({ text, targetLanguage }) {
-  if (!ENV.OPENAI_API_KEY) {
-    console.warn("OPENAI_API_KEY not set, skipping translation");
-    return { translatedText: text, detectedLanguage: null, note: "OPENAI_API_KEY not set" };
+  if (!openai || !ENV.OPENAI_API_KEY || ENV.OPENAI_API_KEY.startsWith('sk-temp-') || ENV.OPENAI_API_KEY === 'your_openai_api_key') {
+    console.warn("OPENAI_API_KEY not set or invalid, skipping translation");
+    return { translatedText: text, detectedLanguage: null, note: "OPENAI_API_KEY not set or invalid" };
   }
 
   if (!text || text.trim().length === 0) {
