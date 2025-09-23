@@ -469,6 +469,11 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // User favorites and relationships
+    favorites: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }],
   },
   { timestamps: true } // createdAt & updatedAt
 );

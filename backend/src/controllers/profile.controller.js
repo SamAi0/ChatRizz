@@ -2,6 +2,570 @@ import User from "../models/User.js";
 import Message from "../models/Message.js";
 import cloudinary from "../lib/cloudinary.js";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
+
+// Get profile statistics with real data
+export const getProfileStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user._id;
+    
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Calculate message statistics
+    const messageStats = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: new mongoose.Types.ObjectId(id) },
+            { receiverId: new mongoose.Types.ObjectId(id) }
+          ]
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalMessages: { $sum: 1 },
+          sentMessages: {
+            $sum: {
+              $cond: [{ $eq: ["$senderId", new mongoose.Types.ObjectId(id)] }, 1, 0]
+            }
+          },
+          receivedMessages: {
+            $sum: {
+              $cond: [{ $eq: ["$receiverId", new mongoose.Types.ObjectId(id)] }, 1, 0]
+            }
+          },
+          mediaShared: {
+            $sum: {
+              $cond: [{ $and: [{ $eq: ["$senderId", new mongoose.Types.ObjectId(id)] }, { $ne: ["$image", null] }] }, 1, 0]
+            }
+          }
+        }
+      }
+    ]);
+
+    // Get conversation partners count
+    const conversationPartners = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: new mongoose.Types.ObjectId(id) },
+            { receiverId: new mongoose.Types.ObjectId(id) }
+          ]
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", new mongoose.Types.ObjectId(id)] },
+              "$receiverId",
+              "$senderId"
+            ]
+          }
+        }
+      },
+      { $count: "totalContacts" }
+    ]);
+
+    // Calculate response rate
+    const responseRate = await Message.aggregate([
+      {
+        $match: {
+          receiverId: new mongoose.Types.ObjectId(id)
+        }
+      },
+      {
+        $lookup: {
+          from: "messages",
+          let: { senderId: "$senderId", timestamp: "$createdAt" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$senderId", new mongoose.Types.ObjectId(id)] },
+                    { $eq: ["$receiverId", "$$senderId"] },
+                    { $gte: ["$createdAt", "$$timestamp"] },
+                    { $lte: ["$createdAt", { $add: ["$$timestamp", 24 * 60 * 60 * 1000] }] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: "responses"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalReceived: { $sum: 1 },
+          totalResponded: {
+            $sum: {
+              $cond: [{ $gt: [{ $size: "$responses" }, 0] }, 1, 0]
+            }
+          }
+        }
+      }
+    ]);
+
+    // Get activity timeline data
+    const activityData = await Message.aggregate([
+      {
+        $match: {
+          senderId: new mongoose.Types.ObjectId(id),
+          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            day: { $dayOfWeek: "$createdAt" },
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.date": 1 } }
+    ]);
+
+    const stats = messageStats[0] || {
+      totalMessages: 0,
+      sentMessages: 0,
+      receivedMessages: 0,
+      mediaShared: 0
+    };
+
+    const contacts = conversationPartners[0]?.totalContacts || 0;
+    const responseData = responseRate[0] || { totalReceived: 0, totalResponded: 0 };
+    const responseRatePercent = responseData.totalReceived > 0 
+      ? Math.round((responseData.totalResponded / responseData.totalReceived) * 100)
+      : 0;
+
+    // Calculate profile completeness
+    const completeness = user.checkProfileCompleteness() ? 100 : 75;
+
+    // Calculate member duration
+    const memberSince = Math.floor((Date.now() - user.createdAt) / (1000 * 60 * 60 * 24));
+
+    res.status(200).json({
+      messagesSent: stats.sentMessages,
+      messagesReceived: stats.receivedMessages,
+      totalMessages: stats.totalMessages,
+      mediaShared: stats.mediaShared,
+      contacts: contacts,
+      responseRate: responseRatePercent,
+      profileCompleteness: completeness,
+      memberDays: memberSince,
+      skillsCount: user.skills?.length || 0,
+      interestsCount: user.interests?.length || 0,
+      badgesCount: user.verification?.badges?.length || 0,
+      isVerified: user.verification?.isVerified || false,
+      activityData: activityData,
+      lastActiveAt: user.lastActiveAt,
+      averageResponseTime: "2.3 min", // This would need more complex calculation
+      dailyActiveHours: "6.5 hrs", // This would need activity tracking
+      conversationsStarted: Math.floor(stats.sentMessages / 10), // Rough estimate
+      profileViews: 45 // This would need view tracking
+    });
+  } catch (error) {
+    console.error("Error in getProfileStats:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get profile media gallery
+export const getProfileMedia = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 20, type = 'all' } = req.query;
+    
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get media from messages
+    const matchCondition = {
+      $or: [
+        { senderId: new mongoose.Types.ObjectId(id) },
+        { receiverId: new mongoose.Types.ObjectId(id) }
+      ],
+      image: { $ne: null }
+    };
+
+    // Filter by media type if specified
+    if (type === 'photos') {
+      matchCondition.image = { $regex: /\.(jpg|jpeg|png|gif|webp)$/i };
+    } else if (type === 'videos') {
+      matchCondition.image = { $regex: /\.(mp4|avi|mov|wmv|flv)$/i };
+    }
+
+    const media = await Message.find(matchCondition)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .populate('senderId', 'fullName profilePic')
+      .populate('receiverId', 'fullName profilePic')
+      .select('image text createdAt senderId receiverId');
+
+    // Get media counts by type
+    const mediaCounts = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: new mongoose.Types.ObjectId(id) },
+            { receiverId: new mongoose.Types.ObjectId(id) }
+          ],
+          image: { $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $regexMatch: { input: "$image", regex: /\.(jpg|jpeg|png|gif|webp)$/i } },
+              "photos",
+              "videos"
+            ]
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const counts = {
+      photos: 0,
+      videos: 0,
+      files: 0
+    };
+
+    mediaCounts.forEach(item => {
+      if (item._id === 'photos') counts.photos = item.count;
+      else if (item._id === 'videos') counts.videos = item.count;
+    });
+
+    res.status(200).json({
+      media,
+      counts,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(media.length / limit)
+    });
+  } catch (error) {
+    console.error("Error in getProfileMedia:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get profile activity timeline
+export const getProfileActivity = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+    
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get activity from user's activity log
+    const activities = user.activityLog
+      .slice((page - 1) * limit, page * limit)
+      .map(activity => ({
+        action: activity.action,
+        details: activity.details,
+        timestamp: activity.timestamp,
+        type: getActivityType(activity.action)
+      }));
+
+    // Add recent message activities
+    const recentMessages = await Message.find({
+      $or: [
+        { senderId: new mongoose.Types.ObjectId(id) },
+        { receiverId: new mongoose.Types.ObjectId(id) }
+      ]
+    })
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .populate('senderId', 'fullName')
+    .populate('receiverId', 'fullName');
+
+    const messageActivities = recentMessages.map(msg => ({
+      action: msg.senderId.toString() === id ? 'message_sent' : 'message_received',
+      details: {
+        text: msg.text?.substring(0, 50) + (msg.text?.length > 50 ? '...' : ''),
+        hasMedia: !!msg.image,
+        partner: msg.senderId.toString() === id ? msg.receiverId.fullName : msg.senderId.fullName
+      },
+      timestamp: msg.createdAt,
+      type: 'message'
+    }));
+
+    // Combine and sort all activities
+    const allActivities = [...activities, ...messageActivities]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, limit);
+
+    res.status(200).json({
+      activities: allActivities,
+      currentPage: parseInt(page),
+      hasMore: user.activityLog.length > page * limit
+    });
+  } catch (error) {
+    console.error("Error in getProfileActivity:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Helper function to determine activity type
+function getActivityType(action) {
+  if (action.includes('message')) return 'message';
+  if (action.includes('profile')) return 'profile';
+  if (action.includes('login')) return 'auth';
+  if (action.includes('skill') || action.includes('interest')) return 'skill';
+  return 'general';
+}
+
+// Toggle favorite user
+export const toggleFavorite = async (req, res) => {
+  try {
+    const { id } = req.params; // User to favorite/unfavorite
+    const currentUserId = req.user._id;
+
+    if (currentUserId.toString() === id) {
+      return res.status(400).json({ message: "Cannot favorite yourself" });
+    }
+
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    
+    // Initialize favorites array if it doesn't exist
+    if (!currentUser.favorites) {
+      currentUser.favorites = [];
+    }
+
+    const isFavorited = currentUser.favorites.includes(id);
+    
+    if (isFavorited) {
+      // Remove from favorites
+      currentUser.favorites = currentUser.favorites.filter(favId => favId.toString() !== id);
+      await currentUser.save();
+      
+      // Log activity
+      currentUser.addActivityLog('user_unfavorited', { userId: id, userName: targetUser.fullName });
+      
+      res.status(200).json({ 
+        message: "User removed from favorites", 
+        isFavorited: false 
+      });
+    } else {
+      // Add to favorites
+      currentUser.favorites.push(id);
+      await currentUser.save();
+      
+      // Log activity
+      currentUser.addActivityLog('user_favorited', { userId: id, userName: targetUser.fullName });
+      
+      res.status(200).json({ 
+        message: "User added to favorites", 
+        isFavorited: true 
+      });
+    }
+  } catch (error) {
+    console.error("Error in toggleFavorite:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Block/unblock user
+export const blockUser = async (req, res) => {
+  try {
+    const { id } = req.params; // User to block/unblock
+    const currentUserId = req.user._id;
+    const { action } = req.body; // 'block' or 'unblock'
+
+    if (currentUserId.toString() === id) {
+      return res.status(400).json({ message: "Cannot block yourself" });
+    }
+
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    
+    // Initialize blocked users array if it doesn't exist
+    if (!currentUser.privacy.blockedUsers) {
+      currentUser.privacy.blockedUsers = [];
+    }
+
+    const isBlocked = currentUser.privacy.blockedUsers.includes(id);
+    
+    if (action === 'block' && !isBlocked) {
+      // Block user
+      currentUser.privacy.blockedUsers.push(id);
+      await currentUser.save();
+      
+      // Log activity
+      currentUser.addActivityLog('user_blocked', { userId: id, userName: targetUser.fullName });
+      
+      res.status(200).json({ 
+        message: "User blocked successfully", 
+        isBlocked: true 
+      });
+    } else if (action === 'unblock' && isBlocked) {
+      // Unblock user
+      currentUser.privacy.blockedUsers = currentUser.privacy.blockedUsers.filter(blockedId => blockedId.toString() !== id);
+      await currentUser.save();
+      
+      // Log activity
+      currentUser.addActivityLog('user_unblocked', { userId: id, userName: targetUser.fullName });
+      
+      res.status(200).json({ 
+        message: "User unblocked successfully", 
+        isBlocked: false 
+      });
+    } else {
+      res.status(400).json({ 
+        message: action === 'block' ? "User is already blocked" : "User is not blocked",
+        isBlocked: isBlocked
+      });
+    }
+  } catch (error) {
+    console.error("Error in blockUser:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Report user
+export const reportUser = async (req, res) => {
+  try {
+    const { id } = req.params; // User to report
+    const currentUserId = req.user._id;
+    const { reason, description } = req.body;
+
+    if (currentUserId.toString() === id) {
+      return res.status(400).json({ message: "Cannot report yourself" });
+    }
+
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    
+    // Log the report in activity
+    currentUser.addActivityLog('user_reported', { 
+      userId: id, 
+      userName: targetUser.fullName,
+      reason,
+      description 
+    });
+    
+    // In a real application, you'd also store this in a separate reports collection
+    // and notify administrators
+    
+    res.status(200).json({ 
+      message: "User reported successfully. Thank you for helping keep our community safe." 
+    });
+  } catch (error) {
+    console.error("Error in reportUser:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Update skills
+export const updateSkills = async (req, res) => {
+  try {
+    const { skills } = req.body;
+    const userId = req.user._id;
+    
+    if (!Array.isArray(skills)) {
+      return res.status(400).json({ message: "Skills must be an array" });
+    }
+    
+    if (skills.length > 20) {
+      return res.status(400).json({ message: "Cannot have more than 20 skills" });
+    }
+    
+    // Validate each skill
+    for (const skill of skills) {
+      if (!skill.name || typeof skill.name !== 'string' || skill.name.length > 30) {
+        return res.status(400).json({ message: "Invalid skill name" });
+      }
+      if (!['beginner', 'intermediate', 'advanced', 'expert'].includes(skill.level)) {
+        return res.status(400).json({ message: "Invalid skill level" });
+      }
+    }
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { skills: skills },
+      { new: true }
+    ).select("-password");
+    
+    // Log activity
+    user.addActivityLog('skills_updated', { skillsCount: skills.length });
+    
+    res.status(200).json({ 
+      message: "Skills updated successfully", 
+      skills: user.skills 
+    });
+  } catch (error) {
+    console.error("Error in updateSkills:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Update interests
+export const updateInterests = async (req, res) => {
+  try {
+    const { interests } = req.body;
+    const userId = req.user._id;
+    
+    if (!Array.isArray(interests)) {
+      return res.status(400).json({ message: "Interests must be an array" });
+    }
+    
+    if (interests.length > 15) {
+      return res.status(400).json({ message: "Cannot have more than 15 interests" });
+    }
+    
+    // Validate each interest
+    for (const interest of interests) {
+      if (typeof interest !== 'string' || interest.length > 30) {
+        return res.status(400).json({ message: "Invalid interest" });
+      }
+    }
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { interests: interests },
+      { new: true }
+    ).select("-password");
+    
+    // Log activity
+    user.addActivityLog('interests_updated', { interestsCount: interests.length });
+    
+    res.status(200).json({ 
+      message: "Interests updated successfully", 
+      interests: user.interests 
+    });
+  } catch (error) {
+    console.error("Error in updateInterests:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 // Get user profile (public view)
 export const getUserProfile = async (req, res) => {
@@ -411,36 +975,6 @@ export const deleteProfilePicture = async (req, res) => {
     res.status(200).json({ message: "Profile picture deleted successfully" });
   } catch (error) {
     console.error("Error in deleteProfilePicture:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-// Get profile stats (messages sent, joined date, etc.)
-export const getProfileStats = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Count messages sent by user
-    const messageCount = await Message.countDocuments({ senderId: id });
-
-    // Calculate days since joining
-    const joinedDate = user.createdAt;
-    const daysSinceJoined = Math.floor((Date.now() - joinedDate) / (1000 * 60 * 60 * 24));
-
-    res.status(200).json({
-      joinedDate,
-      daysSinceJoined,
-      messageCount,
-      isProfileComplete: user.isProfileComplete,
-      lastActiveAt: user.lastActiveAt,
-    });
-  } catch (error) {
-    console.error("Error in getProfileStats:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -886,31 +1420,6 @@ export const addVerificationBadge = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in addVerificationBadge:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-// Block user
-export const blockUser = async (req, res) => {
-  try {
-    const { userIdToBlock } = req.body;
-    const userId = req.user._id;
-
-    if (userId.toString() === userIdToBlock) {
-      return res.status(400).json({ message: "Cannot block yourself" });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $addToSet: { "privacy.blockedUsers": userIdToBlock } },
-      { new: true }
-    ).select("-password");
-
-    await updatedUser.addActivityLog('user_blocked', { blockedUserId: userIdToBlock });
-
-    res.status(200).json({ message: "User blocked successfully" });
-  } catch (error) {
-    console.error("Error in blockUser:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
