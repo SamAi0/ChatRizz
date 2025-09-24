@@ -67,14 +67,14 @@ const TranslationSettings = ({ onClose }) => {
 
         {/* Content */}
         <div className="p-4 space-y-6 max-h-[calc(80vh-120px)] overflow-y-auto">
-          {/* Demo Mode Notice */}
+          {/* Translation Status */}
           <div className="alert alert-info">
             <div className="flex items-center gap-2">
-              <div className="badge badge-warning">DEMO</div>
+              <div className="badge badge-success">ACTIVE</div>
               <div>
-                <div className="font-medium">Translation Demo Mode</div>
+                <div className="font-medium">Multi-Provider Translation</div>
                 <div className="text-sm opacity-75">
-                  Translation service is in demo mode. Mock translations will be shown.
+                  Automatic fallback: OpenAI → RapidAPI → Offline mode
                 </div>
               </div>
             </div>

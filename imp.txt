@@ -30,3 +30,38 @@ resend.emails.send({
 
    ARCJET_KEY=ajkey_01k55ygg7mec198jhvh84wmdmt
    ARCJET_ENV=development
+
+
+
+
+
+
+
+   # Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# Database
+MONGO_URI=mongodb+srv://admin:admin123@myappcluster.qgh2nih.mongodb.net/?retryWrites=true&w=majority&appName=MyAppCluster
+
+# JWT Authentication
+JWT_SECRET=604ce552344c542717e39f1425b0d0ec9d094fc238b485f939ced06ead1be8fddf0a5ba3871d032d15ca588110725a91a5e3ff5cd77eaa990681e2c3fa1f4cf6
+
+# Email Service (Resend)
+RESEND_API_KEY=re_NnbcxKBw_JT2ckWTjmFGRW17qdpyiXQbA
+EMAIL_FROM=noreply@yourdomain.com
+EMAIL_FROM_NAME=Chatify App
+
+# Frontend URL
+CLIENT_URL=http://localhost:5173
+
+# Image Upload (Cloudinary)
+CLOUDINARY_CLOUD_NAME=dyedgwpzj
+CLOUDINARY_API_KEY=255212667258678
+CLOUDINARY_API_SECRET=KJjcSLyiN3plaYv0mAXjaY4Bo5M
+
+# Rate Limiting (Arcjet)
+ARCJET_KEY=ajkey_01k55ygg7mec198jhvh84wmdmt
+ARCJET_ENV=development
+
+OPENAI_API_KEY=sk-user-4BaM_ZQgRMrq1PDDXcx6sW8Aqva4_DWqDnQB1vNMCjGZOc9euk7B7Vnn1j5G9paz3jC339rxVZYTLGBCxORMc6rW2QY7Qcjw2fAGovAGYfLoyjnLqCyRSgAtHHyJNj_lFOE

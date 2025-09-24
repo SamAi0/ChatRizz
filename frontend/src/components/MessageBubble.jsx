@@ -150,8 +150,14 @@ const MessageBubble = ({ message, onImageClick }) => {
                     {translation.cached && (
                       <span className="badge badge-ghost badge-xs ml-1">Cached</span>
                     )}
-                    {translation.mock && (
-                      <span className="badge badge-warning badge-xs ml-1">Demo Mode</span>
+                    {translation.provider === 'rapidapi' && (
+                      <span className="badge badge-info badge-xs ml-1">RapidAPI</span>
+                    )}
+                    {translation.provider === 'openai' && (
+                      <span className="badge badge-success badge-xs ml-1">OpenAI</span>
+                    )}
+                    {translation.provider === 'fallback' && (
+                      <span className="badge badge-warning badge-xs ml-1">Fallback</span>
                     )}
                   </div>
                 </div>

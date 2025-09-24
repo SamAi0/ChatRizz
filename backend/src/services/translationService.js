@@ -1,4 +1,10 @@
 import { getOpenAIInstance } from '../lib/openai.js';
+import { 
+  translateWithRapidAPI, 
+  detectLanguageWithRapidAPI, 
+  isRapidAPIAvailable,
+  RAPIDAPI_LANGUAGE_MAP 
+} from '../lib/rapidapi.js';
 
 // Supported languages with their codes and display names
 export const SUPPORTED_LANGUAGES = {
@@ -40,6 +46,13 @@ class TranslationService {
     this.openai = getOpenAIInstance();
     this.cache = new Map(); // Simple in-memory cache
     this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
+    this.primaryProvider = this.openai ? 'openai' : (isRapidAPIAvailable() ? 'rapidapi' : null);
+    
+    console.log('Translation Service initialized:', {
+      openai: !!this.openai,
+      rapidapi: isRapidAPIAvailable(),
+      primaryProvider: this.primaryProvider
+    });
   }
 
   /**
@@ -57,53 +70,96 @@ class TranslationService {
   }
 
   /**
-   * Detect the language of the given text
+   * Detect the language of the given text with automatic fallback
    */
   async detectLanguage(text) {
-    if (!this.openai) {
-      throw new Error('OpenAI API not available. Please configure your API key.');
-    }
-
     if (!text || text.trim().length === 0) {
       return 'en'; // Default to English for empty text
     }
 
-    try {
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are a language detection system. Respond with only the ISO 639-1 language code (e.g., 'en', 'es', 'fr') for the detected language. If uncertain, respond with 'en'."
-          },
-          {
-            role: "user",
-            content: `Detect the language of this text: "${text}"`
-          }
-        ],
-        max_tokens: 10,
-        temperature: 0
-      });
+    // Try OpenAI first
+    if (this.openai) {
+      try {
+        const response = await this.openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are a language detection system. Respond with only the ISO 639-1 language code (e.g., 'en', 'es', 'fr') for the detected language. If uncertain, respond with 'en'."
+            },
+            {
+              role: "user",
+              content: `Detect the language of this text: "${text}"`
+            }
+          ],
+          max_tokens: 10,
+          temperature: 0
+        });
 
-      const detectedLang = response.choices[0]?.message?.content?.trim().toLowerCase();
-      
-      // Validate the detected language is in our supported list
-      if (SUPPORTED_LANGUAGES[detectedLang]) {
-        return detectedLang;
+        const detectedLang = response.choices[0]?.message?.content?.trim().toLowerCase();
+        
+        // Validate the detected language is in our supported list
+        if (SUPPORTED_LANGUAGES[detectedLang]) {
+          return detectedLang;
+        }
+        
+        return 'en'; // Fallback to English
+      } catch (error) {
+        console.warn('OpenAI language detection failed, trying RapidAPI fallback:', error.message);
       }
-      
-      return 'en'; // Fallback to English
-    } catch (error) {
-      console.error('Language detection error:', error);
-      
-      // Handle specific OpenAI errors gracefully
-      if (error.status === 429) {
-        console.warn('OpenAI quota exceeded, falling back to English detection');
-        return 'en'; // Fallback to English when quota exceeded
-      }
-      
-      return 'en'; // Fallback to English on any error
     }
+
+    // Fallback to RapidAPI
+    if (isRapidAPIAvailable()) {
+      try {
+        const detectedLang = await detectLanguageWithRapidAPI(text);
+        return detectedLang || 'en';
+      } catch (error) {
+        console.warn('RapidAPI language detection failed:', error.message);
+      }
+    }
+
+    // Final fallback
+    return 'en';
+  }
+
+  /**
+   * Translate using OpenAI
+   */
+  async translateWithOpenAI(text, sourceLanguage, toLang) {
+    const sourceLangName = SUPPORTED_LANGUAGES[sourceLanguage] || sourceLanguage;
+    const targetLangName = SUPPORTED_LANGUAGES[toLang] || toLang;
+
+    const response = await this.openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: `You are a professional translator. Translate the given text from ${sourceLangName} to ${targetLangName}. 
+          
+          Rules:
+          - Maintain the original tone and context
+          - Preserve formatting and special characters
+          - If the text contains names, places, or technical terms, keep them appropriate for the target language
+          - Respond with only the translated text, no explanations
+          - If the text is already in the target language, return it as is`
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+      max_tokens: Math.max(100, text.length * 2),
+      temperature: 0.3
+    });
+
+    const translatedText = response.choices[0]?.message?.content?.trim();
+    
+    if (!translatedText) {
+      throw new Error('No translation received from OpenAI');
+    }
+
+    return { translatedText };
   }
 
   /**
@@ -112,21 +168,17 @@ class TranslationService {
   getMockTranslation(text, fromLang, toLang) {
     const languages = SUPPORTED_LANGUAGES;
     return {
-      translatedText: `[MOCK TRANSLATION] ${text} (${languages[fromLang] || fromLang} → ${languages[toLang] || toLang})`,
+      translatedText: `[FALLBACK] ${text}`,
       detectedLanguage: fromLang === 'auto' ? 'en' : fromLang,
       cached: false,
-      mock: true
+      provider: 'fallback'
     };
   }
 
   /**
-   * Translate text from one language to another
+   * Translate text from one language to another with automatic fallback
    */
   async translateText(text, fromLang = 'auto', toLang = 'en') {
-    if (!this.openai) {
-      throw new Error('OpenAI API not available. Please configure your API key.');
-    }
-
     if (!text || text.trim().length === 0) {
       return { translatedText: text, detectedLanguage: 'en' };
     }
@@ -142,7 +194,8 @@ class TranslationService {
       return { 
         translatedText: text, 
         detectedLanguage: sourceLanguage,
-        cached: false 
+        cached: false,
+        provider: 'none'
       };
     }
 
@@ -154,75 +207,60 @@ class TranslationService {
       return {
         translatedText: cachedResult.translation,
         detectedLanguage: sourceLanguage,
-        cached: true
+        cached: true,
+        provider: cachedResult.provider || 'cached'
       };
     }
 
-    try {
-      const sourceLangName = SUPPORTED_LANGUAGES[sourceLanguage] || sourceLanguage;
-      const targetLangName = SUPPORTED_LANGUAGES[toLang] || toLang;
+    // Try OpenAI first
+    if (this.openai) {
+      try {
+        const result = await this.translateWithOpenAI(text, sourceLanguage, toLang);
+        
+        // Cache the result
+        this.cache.set(cacheKey, {
+          translation: result.translatedText,
+          timestamp: Date.now(),
+          provider: 'openai'
+        });
 
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: `You are a professional translator. Translate the given text from ${sourceLangName} to ${targetLangName}. 
-            
-            Rules:
-            - Maintain the original tone and context
-            - Preserve formatting and special characters
-            - If the text contains names, places, or technical terms, keep them appropriate for the target language
-            - Respond with only the translated text, no explanations
-            - If the text is already in the target language, return it as is`
-          },
-          {
-            role: "user",
-            content: text
-          }
-        ],
-        max_tokens: Math.max(100, text.length * 2), // Dynamic token limit based on input length
-        temperature: 0.3 // Low temperature for consistent translations
-      });
-
-      const translatedText = response.choices[0]?.message?.content?.trim();
-
-      if (!translatedText) {
-        throw new Error('No translation received from OpenAI');
+        return {
+          ...result,
+          detectedLanguage: sourceLanguage,
+          cached: false,
+          provider: 'openai'
+        };
+      } catch (error) {
+        console.warn('OpenAI translation failed, trying RapidAPI fallback:', error.message);
       }
-
-      // Cache the result
-      this.cache.set(cacheKey, {
-        translation: translatedText,
-        timestamp: Date.now()
-      });
-
-      return {
-        translatedText,
-        detectedLanguage: sourceLanguage,
-        cached: false
-      };
-
-    } catch (error) {
-      console.error('Translation error:', error);
-      
-      // Handle specific OpenAI errors with user-friendly messages
-      if (error.status === 429) {
-        if (error.code === 'insufficient_quota') {
-          console.warn('OpenAI quota exceeded, providing mock translation');
-          // Return mock translation instead of throwing error
-          return this.getMockTranslation(text, sourceLanguage, toLang);
-        } else {
-          throw new Error('Translation service is currently busy. Please try again in a moment.');
-        }
-      } else if (error.status === 401) {
-        throw new Error('Translation service authentication error. Please contact support.');
-      } else if (error.status === 503) {
-        throw new Error('Translation service is temporarily down for maintenance.');
-      }
-      
-      throw new Error(`Translation failed: ${error.message}`);
     }
+
+    // Fallback to RapidAPI
+    if (isRapidAPIAvailable()) {
+      try {
+        const result = await translateWithRapidAPI(text, sourceLanguage, toLang);
+        
+        // Cache the result
+        this.cache.set(cacheKey, {
+          translation: result.translatedText,
+          timestamp: Date.now(),
+          provider: 'rapidapi'
+        });
+
+        return {
+          ...result,
+          detectedLanguage: sourceLanguage,
+          cached: false,
+          provider: 'rapidapi'
+        };
+      } catch (error) {
+        console.warn('RapidAPI translation failed:', error.message);
+      }
+    }
+
+    // Final fallback - return mock translation
+    console.warn('All translation providers failed, returning mock translation');
+    return this.getMockTranslation(text, sourceLanguage, toLang);
   }
 
   /**
