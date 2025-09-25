@@ -31,6 +31,17 @@ const MessageBubble = ({ message, onImageClick }) => {
     }
   }, [autoTranslate, isOwnMessage, hasText, preferredLanguage, message.text]);
 
+  // Automatically show translated text when auto-translate is enabled and translation is available
+  useEffect(() => {
+    if (autoTranslate && !isOwnMessage && translation && !showTranslatedText) {
+      setShowTranslatedText(true);
+    }
+    // Hide translated text when auto-translate is disabled
+    if (!autoTranslate && showTranslatedText) {
+      setShowTranslatedText(false);
+    }
+  }, [autoTranslate, translation, isOwnMessage]);
+
   const handleAutoTranslate = async () => {
     if (!hasText || isOwnMessage) return;
 
@@ -147,6 +158,9 @@ const MessageBubble = ({ message, onImageClick }) => {
                   <div className="text-xs opacity-60 flex items-center gap-1">
                     <Languages className="w-3 h-3" />
                     <span>{translation.fromLanguage} → {translation.toLanguage}</span>
+                    {autoTranslate && (
+                      <span className="badge badge-primary badge-xs ml-1">Auto</span>
+                    )}
                     {translation.cached && (
                       <span className="badge badge-ghost badge-xs ml-1">Cached</span>
                     )}
@@ -171,7 +185,8 @@ const MessageBubble = ({ message, onImageClick }) => {
                       <span>Translating...</span>
                     </div>
                   )}
-                  {translation && !showTranslatedText && (
+                  {/* Translation available indicator - only show when auto-translate is disabled */}
+                  {translation && !showTranslatedText && !autoTranslate && (
                     <div className="text-xs opacity-60 mt-1 flex items-center gap-1">
                       <Languages className="w-3 h-3" />
                       <span>Translation available</span>

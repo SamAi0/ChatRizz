@@ -7,7 +7,7 @@ export const useTranslationStore = create(
     (set, get) => ({
       // User preferences
       preferredLanguage: 'en',
-      autoTranslate: false,
+      autoTranslate: true, // Enable auto-translate by default
       showOriginal: true,
       
       // Supported languages

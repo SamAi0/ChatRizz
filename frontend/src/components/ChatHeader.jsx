@@ -9,7 +9,7 @@ import { useTranslationStore } from "../store/useTranslationStore";
 function ChatHeader() {
   const { selectedUser, setSelectedUser } = useChatStore();
   const { onlineUsers, socket } = useAuthStore();
-  const { preferredLanguage, supportedLanguages } = useTranslationStore();
+  const { preferredLanguage, supportedLanguages, autoTranslate } = useTranslationStore();
   const navigate = useNavigate();
   const [isTyping, setIsTyping] = useState(false);
   const [showTranslationSettings, setShowTranslationSettings] = useState(false);
@@ -64,6 +64,12 @@ function ChatHeader() {
             </p>
             {selectedUser.statusText && (
               <p className="text-slate-500 text-xs truncate max-w-[200px]">{selectedUser.statusText}</p>
+            )}
+            {autoTranslate && (
+              <div className="flex items-center gap-1 mt-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <p className="text-green-400 text-xs font-medium">Auto-translate: ON</p>
+              </div>
             )}
           </div>
         </div>

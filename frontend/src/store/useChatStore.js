@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "./useAuthStore";
+import { useTranslationStore } from "./useTranslationStore";
 
 export const useChatStore = create((set, get) => ({
   allContacts: [],
@@ -100,8 +101,25 @@ export const useChatStore = create((set, get) => ({
 
       const currentMessages = get().messages;
       set({ messages: [...currentMessages, newMessage] });
+      
       // immediately mark as seen when chat is open
       axiosInstance.post(`/messages/seen/${selectedUser._id}`).catch(() => {});
+
+      // Auto-translate new incoming message if auto-translate is enabled
+      const { autoTranslate, preferredLanguage, translateMessage } = useTranslationStore.getState();
+      const { authUser } = useAuthStore.getState();
+      
+      if (autoTranslate && newMessage.text && newMessage.senderId !== authUser._id && preferredLanguage) {
+        // Trigger translation in the background
+        translateMessage(
+          newMessage._id,
+          newMessage.text,
+          'auto',
+          preferredLanguage
+        ).catch(error => {
+          console.error('Auto-translation failed for new message:', error);
+        });
+      }
 
       if (isSoundEnabled) {
         const notificationSound = new Audio("/sounds/notification.mp3");

@@ -125,7 +125,7 @@ const TranslationSettings = ({ onClose }) => {
               </button>
             </div>
             <p className="text-sm text-base-content/60">
-              Automatically translate incoming messages to your preferred language
+              Automatically translate incoming messages to your preferred language in real-time (no buttons required)
             </p>
           </div>
 
