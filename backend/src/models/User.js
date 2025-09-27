@@ -381,11 +381,34 @@ const userSchema = new mongoose.Schema(
         default: true,
       },
     },
+    // Email verification
+    emailVerification: {
+      isVerified: {
+        type: Boolean,
+        default: false,
+      },
+      verificationToken: {
+        type: String,
+        default: null,
+      },
+      verificationTokenExpires: {
+        type: Date,
+        default: null,
+      },
+      verificationAttempts: {
+        type: Number,
+        default: 0,
+      },
+      lastVerificationEmailSent: {
+        type: Date,
+        default: null,
+      },
+    },
     // Account settings
     accountStatus: {
       type: String,
-      enum: ["active", "suspended", "deactivated"],
-      default: "active",
+      enum: ["active", "suspended", "deactivated", "pending_verification"],
+      default: "pending_verification",
     },
     twoFactorEnabled: {
       type: Boolean,
@@ -564,6 +587,68 @@ userSchema.methods.getProfileStats = function() {
     memberSince: this.createdAt,
     lastActive: this.lastActiveAt
   };
+};
+
+// Generate email verification OTP
+userSchema.methods.generateVerificationOTP = function() {
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  this.emailVerification.verificationToken = otp;
+  this.emailVerification.verificationTokenExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  this.emailVerification.lastVerificationEmailSent = new Date();
+  
+  return otp;
+};
+
+// Verify email OTP
+userSchema.methods.verifyEmailOTP = function(providedOTP) {
+  const { verificationToken, verificationTokenExpires, verificationAttempts } = this.emailVerification;
+  
+  // Check if OTP exists and hasn't expired
+  if (!verificationToken || !verificationTokenExpires || verificationTokenExpires < new Date()) {
+    return { success: false, message: "OTP has expired. Please request a new one." };
+  }
+  
+  // Check attempt limit (max 5 attempts)
+  if (verificationAttempts >= 5) {
+    return { success: false, message: "Too many failed attempts. Please request a new OTP." };
+  }
+  
+  // Verify OTP
+  if (verificationToken === providedOTP) {
+    this.emailVerification.isVerified = true;
+    this.emailVerification.verificationToken = null;
+    this.emailVerification.verificationTokenExpires = null;
+    this.emailVerification.verificationAttempts = 0;
+    this.accountStatus = "active";
+    this.verification.isVerified = true;
+    this.verification.verifiedAt = new Date();
+    this.verification.verificationLevel = "email";
+    
+    return { success: true, message: "Email verified successfully!" };
+  } else {
+    this.emailVerification.verificationAttempts += 1;
+    return { success: false, message: "Invalid OTP. Please try again." };
+  }
+};
+
+// Check if user can request new OTP (rate limiting)
+userSchema.methods.canRequestNewOTP = function() {
+  if (!this.emailVerification.lastVerificationEmailSent) return true;
+  
+  const lastSent = new Date(this.emailVerification.lastVerificationEmailSent);
+  const now = new Date();
+  const timeDiff = (now - lastSent) / 1000 / 60; // minutes
+  
+  return timeDiff >= 2; // Allow new OTP every 2 minutes
+};
+
+// Reset verification attempts
+userSchema.methods.resetVerificationAttempts = function() {
+  this.emailVerification.verificationAttempts = 0;
+  this.emailVerification.verificationToken = null;
+  this.emailVerification.verificationTokenExpires = null;
 };
 
 // Export profile data

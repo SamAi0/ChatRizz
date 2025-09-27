@@ -2,15 +2,30 @@ import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
 import { MessageCircleIcon, LockIcon, MailIcon, UserIcon, LoaderIcon } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 function SignUpPage() {
   const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
   const { signup, isSigningUp } = useAuthStore();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    signup(formData);
+    try {
+      const result = await signup(formData);
+      if (result && result.needsVerification) {
+        // Redirect to email verification page
+        navigate("/verify-email", {
+          state: {
+            email: result.email,
+            userId: result.userId
+          }
+        });
+      }
+    } catch (error) {
+      // Error is already handled in the store with toast
+      console.error("Signup error:", error);
+    }
   };
 
   return (

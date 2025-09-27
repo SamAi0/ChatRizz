@@ -2,15 +2,30 @@ import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
 import { MessageCircleIcon, MailIcon, LoaderIcon, LockIcon } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const { login, isLoggingIn } = useAuthStore();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(formData);
+    try {
+      const result = await login(formData);
+      if (result && result.needsVerification) {
+        // Redirect to email verification page
+        navigate("/verify-email", {
+          state: {
+            email: result.email,
+            userId: result.userId
+          }
+        });
+      }
+    } catch (error) {
+      // Error is already handled in the store with toast
+      console.error("Login error:", error);
+    }
   };
 
   return (

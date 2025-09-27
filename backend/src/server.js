@@ -12,6 +12,7 @@ import translationRoutes from "./routes/translation.routes.js";
 import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
 import { app, server } from "./lib/socket.js";
+import { initEmailService } from "./emails/emailHandlers.js";
 
 // Resolve current file path in ESM and derive directory
 const __filename = fileURLToPath(import.meta.url);
@@ -58,4 +59,5 @@ if (ENV.NODE_ENV === "production") {
 server.listen(PORT, () => {
   console.log("Server running on port: " + PORT + " with updated CORS");
   connectDB();
+  initEmailService(); // Initialize email service
 });

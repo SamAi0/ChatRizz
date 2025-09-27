@@ -68,6 +68,11 @@ function ProfileHeader() {
     setEditing(false);
   };
 
+  // Dispatch event to open profile sidebar for current user
+  const openProfileSidebar = () => {
+    window.dispatchEvent(new CustomEvent('openProfileSidebar', { detail: { userId: null } }));
+  };
+
   return (
     <div className="p-6 border-b border-slate-700/50">
       <div className="flex items-center justify-between">
@@ -121,7 +126,7 @@ function ProfileHeader() {
               <>
                 <div 
                   className="cursor-pointer flex items-center gap-2" 
-                  onClick={() => navigate("/profile")}
+                  onClick={openProfileSidebar}
                 >
                   <div>
                     <div className="flex items-center gap-2">
@@ -146,6 +151,8 @@ function ProfileHeader() {
                         {authUser.customStatus?.text || authUser.statusText || "Available"}
                       </p>
                     </div>
+                    {/* Online Status */}
+                    <p className="text-slate-500 text-xs">Online</p>
                   </div>
                 </div>
               </>
@@ -175,22 +182,13 @@ function ProfileHeader() {
             
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-lg border border-slate-700 shadow-lg z-50">
-                <button
-                  onClick={() => {
-                    navigate("/profile");
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-t-lg flex items-center gap-2"
-                >
-                  <UserIcon className="w-4 h-4" />
-                  View Profile
-                </button>
+                {/* Removed the "View Profile" option that navigates to the profile page */}
                 <button
                   onClick={() => {
                     toggleTheme();
                     setShowDropdown(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-t-lg flex items-center gap-2"
                 >
                   <PaletteIcon className="w-4 h-4" />
                   {theme === "dark" ? "Switch to Light" : "Switch to Dark"}
@@ -286,4 +284,5 @@ function ProfileHeader() {
     </div>
   );
 }
+
 export default ProfileHeader;

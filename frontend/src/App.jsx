@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router";
 import ChatPage from "./pages/ChatPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileSettingsPage from "./pages/ProfileSettingsPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
@@ -41,6 +42,7 @@ function App() {
         <Route path="/profile/settings" element={authUser ? <ProfileSettingsPage /> : <Navigate to={"/login"} />} />
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to={"/"} />} />
         <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to={"/"} />} />
+        <Route path="/verify-email" element={!authUser ? <EmailVerificationPage /> : <Navigate to={"/"} />} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />

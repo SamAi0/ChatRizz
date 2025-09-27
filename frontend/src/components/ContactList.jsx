@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { UserIcon } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
@@ -8,7 +7,6 @@ import { useAuthStore } from "../store/useAuthStore";
 function ContactList() {
   const { getAllContacts, allContacts, setSelectedUser, isUsersLoading } = useChatStore();
   const { onlineUsers } = useAuthStore();
-  const navigate = useNavigate();
 
   useEffect(() => {
     getAllContacts();
@@ -20,7 +18,8 @@ function ContactList() {
 
   const handleProfileClick = (e, contactId) => {
     e.stopPropagation();
-    navigate(`/profile/${contactId}`);
+    // Dispatch event to open profile sidebar
+    window.dispatchEvent(new CustomEvent('openProfileSidebar', { detail: { userId: contactId } }));
   };
 
   if (isUsersLoading) return <UsersLoadingSkeleton />;
@@ -44,6 +43,10 @@ function ContactList() {
               {contact.statusText && (
                 <p className="text-slate-400 text-sm truncate">{contact.statusText}</p>
               )}
+              {/* Show online status */}
+              <p className="text-slate-500 text-xs">
+                {onlineUsers.includes(contact._id) ? "Online" : "Offline"}
+              </p>
             </div>
             
             {/* Profile View Button */}

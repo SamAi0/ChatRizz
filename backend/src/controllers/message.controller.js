@@ -158,3 +158,47 @@ export const getChatPartners = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Clear all messages in a chat (but keep the chat in the list)
+export const clearChat = async (req, res) => {
+  try {
+    const myId = req.user._id;
+    const { id: userToChatId } = req.params;
+
+    // Delete all messages between the two users
+    await Message.deleteMany({
+      $or: [
+        { senderId: myId, receiverId: userToChatId },
+        { senderId: userToChatId, receiverId: myId },
+      ],
+    });
+
+    res.status(200).json({ message: "Chat cleared successfully" });
+  } catch (error) {
+    console.log("Error in clearChat: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Delete a chat (remove it from the chat list)
+export const deleteChat = async (req, res) => {
+  try {
+    const myId = req.user._id;
+    const { id: userToChatId } = req.params;
+
+    // Mark all messages between the two users as deleted (soft delete)
+    // In this case, we're actually just clearing the chat since we don't have a separate chat model
+    // The chat will disappear from the list when there are no more messages
+    await Message.deleteMany({
+      $or: [
+        { senderId: myId, receiverId: userToChatId },
+        { senderId: userToChatId, receiverId: myId },
+      ],
+    });
+
+    res.status(200).json({ message: "Chat deleted successfully" });
+  } catch (error) {
+    console.log("Error in deleteChat: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

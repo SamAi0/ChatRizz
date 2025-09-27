@@ -35,10 +35,8 @@ resend.emails.send({
 
 
 
-
-
-   # Server Configuration
-PORT=3000
+# Server Configuration
+PORT=3001
 NODE_ENV=development
 
 # Database
@@ -47,10 +45,15 @@ MONGO_URI=mongodb+srv://admin:admin123@myappcluster.qgh2nih.mongodb.net/?retryWr
 # JWT Authentication
 JWT_SECRET=604ce552344c542717e39f1425b0d0ec9d094fc238b485f939ced06ead1be8fddf0a5ba3871d032d15ca588110725a91a5e3ff5cd77eaa990681e2c3fa1f4cf6
 
-# Email Service (Resend)
+# Email Service (Resend - Backup)
 RESEND_API_KEY=re_NnbcxKBw_JT2ckWTjmFGRW17qdpyiXQbA
-EMAIL_FROM=noreply@yourdomain.com
-EMAIL_FROM_NAME=Chatify App
+EMAIL_FROM=onboarding@resend.dev
+EMAIL_FROM_NAME=ChatRizz
+
+# Gmail SMTP (Primary)
+GMAIL_USER=gamer0op10@gmail.com
+GMAIL_APP_PASSWORD=bcvv hazb kgbq tuou
+GMAIL_FROM_NAME=ChatRizz
 
 # Frontend URL
 CLIENT_URL=http://localhost:5173
@@ -64,4 +67,7 @@ CLOUDINARY_API_SECRET=KJjcSLyiN3plaYv0mAXjaY4Bo5M
 ARCJET_KEY=ajkey_01k55ygg7mec198jhvh84wmdmt
 ARCJET_ENV=development
 
-OPENAI_API_KEY=sk-user-4BaM_ZQgRMrq1PDDXcx6sW8Aqva4_DWqDnQB1vNMCjGZOc9euk7B7Vnn1j5G9paz3jC339rxVZYTLGBCxORMc6rW2QY7Qcjw2fAGovAGYfLoyjnLqCyRSgAtHHyJNj_lFOE
+OPENAI_API_KEY=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
+
+# RapidAPI Deep Translate (Fallback)
+RAPIDAPI_KEY=7ff0b6cffdmshf4cc6dbf294914bp166008jsn62dd6adba407
