@@ -11,7 +11,9 @@ import {
   CrownIcon, 
   ShieldCheckIcon, 
   ActivityIcon,
-  ImageIcon
+  ImageIcon,
+  BellIcon,
+  EditIcon
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
@@ -74,7 +76,7 @@ function ProfileHeader() {
   };
 
   return (
-    <div className="p-6 border-b border-slate-700/50">
+    <div className="p-6 border-b border-slate-700/50 chatrizz-bg">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* AVATAR */}
@@ -160,108 +162,32 @@ function ProfileHeader() {
           </div>
         </div>
 
-        {/* BUTTONS */}
+        {/* QUICK SETTINGS ICONS */}
         <div className="flex gap-2 items-center">
           <button
-            className="text-slate-400 hover:text-slate-200 transition-colors text-xs"
+            className="text-slate-400 hover:text-slate-200 transition-colors"
             onClick={() => setEditing((v) => !v)}
-            title="Quick Edit"
+            title="Edit Profile"
           >
-            Edit
+            <EditIcon className="size-5" />
           </button>
           
-          {/* Quick Action Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              className="text-slate-400 hover:text-slate-200 transition-colors"
-              onClick={() => setShowDropdown(!showDropdown)}
-              title="More Options"
-            >
-              <StarIcon className="size-5" />
-            </button>
-            
-            {showDropdown && (
-              <div className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-lg border border-slate-700 shadow-lg z-50">
-                {/* Removed the "View Profile" option that navigates to the profile page */}
-                <button
-                  onClick={() => {
-                    toggleTheme();
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 rounded-t-lg flex items-center gap-2"
-                >
-                  <PaletteIcon className="w-4 h-4" />
-                  {theme === "dark" ? "Switch to Light" : "Switch to Dark"}
-                </button>
-                <button
-                  onClick={() => {
-                    console.log("Advanced Editor clicked from header");
-                    // TODO: Open Advanced Editor
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
-                >
-                  <StarIcon className="w-4 h-4" />
-                  Advanced Edit
-                </button>
-                <button
-                  onClick={() => {
-                    console.log("Theme Customizer clicked from header");
-                    // TODO: Open Theme Customizer
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
-                >
-                  <PaletteIcon className="w-4 h-4" />
-                  Customize Theme
-                </button>
-                <button
-                  onClick={() => {
-                    console.log("Gallery clicked from header");
-                    // TODO: Open Gallery
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
-                >
-                  <ImageIcon className="w-4 h-4" />
-                  Gallery
-                </button>
-                <button
-                  onClick={() => {
-                    console.log("Activity clicked from header");
-                    // TODO: Open Activity Timeline
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
-                >
-                  <ActivityIcon className="w-4 h-4" />
-                  Activity
-                </button>
-                <hr className="border-slate-700" />
-                <button
-                  onClick={() => {
-                    navigate("/profile/settings");
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 flex items-center gap-2"
-                >
-                  <SettingsIcon className="w-4 h-4" />
-                  Settings
-                </button>
-                <button
-                  onClick={() => {
-                    logout();
-                    setShowDropdown(false);
-                  }}
-                  className="w-full text-left px-3 py-2 text-red-400 hover:bg-slate-700 rounded-b-lg flex items-center gap-2"
-                >
-                  <LogOutIcon className="w-4 h-4" />
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-
+          <button
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+            onClick={() => console.log("Notifications clicked")}
+            title="Notifications"
+          >
+            <BellIcon className="size-5" />
+          </button>
+          
+          <button
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+            onClick={() => navigate("/profile/settings")}
+            title="Settings"
+          >
+            <SettingsIcon className="size-5" />
+          </button>
+          
           {/* SOUND TOGGLE BTN */}
           <button
             className="text-slate-400 hover:text-slate-200 transition-colors"

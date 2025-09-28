@@ -3,7 +3,7 @@ import useKeyboardSound from "../hooks/useKeyboardSound";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
-import { ImageIcon, SendIcon, XIcon, PaperclipIcon } from "lucide-react";
+import { ImageIcon, SendIcon, XIcon, PaperclipIcon, SmileIcon } from "lucide-react";
 
 function MessageInput() {
   const { playRandomKeyStrokeSound } = useKeyboardSound();
@@ -61,7 +61,7 @@ function MessageInput() {
   };
 
   return (
-    <div className="p-4 border-t border-slate-700/50">
+    <div className="p-4 border-t border-slate-700/50 chatrizz-bg">
       {(imagePreview || fileInfo) && (
         <div className="max-w-3xl mx-auto mb-3 flex items-center">
           <div className="relative">
@@ -88,18 +88,20 @@ function MessageInput() {
       )}
 
       <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex space-x-4">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            isSoundEnabled && playRandomKeyStrokeSound();
-            if (socket && selectedUser) socket.emit("typing", { to: selectedUser._id });
-          }}
-          onBlur={() => socket?.emit("stopTyping", { to: selectedUser?._id })}
-          className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-4"
-          placeholder="Type your message..."
-        />
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              isSoundEnabled && playRandomKeyStrokeSound();
+              if (socket && selectedUser) socket.emit("typing", { to: selectedUser._id });
+            }}
+            onBlur={() => socket?.emit("stopTyping", { to: selectedUser?._id })}
+            className="w-full rounded-input text-slate-200 placeholder-slate-400"
+            placeholder="Type your message..."
+          />
+        </div>
 
         <input
           type="file"
@@ -110,26 +112,43 @@ function MessageInput() {
         />
         <input type="file" accept="*/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} />
 
+        {/* Emoji Button */}
+        <button
+          type="button"
+          onClick={() => console.log("Emoji picker clicked")}
+          className="bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-3 transition-colors flex items-center justify-center"
+          title="Add emoji"
+        >
+          <SmileIcon className="w-5 h-5" />
+        </button>
+
+        {/* Image Button */}
         <button
           type="button"
           onClick={() => imageInputRef.current?.click()}
-          className={`bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-4 transition-colors ${
+          className={`bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-3 transition-colors flex items-center justify-center ${
             imagePreview ? "text-cyan-500" : ""
           }`}
+          title="Add image"
         >
           <ImageIcon className="w-5 h-5" />
         </button>
+
+        {/* File Attachment Button */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-3"
+          className="bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-3 flex items-center justify-center"
+          title="Attach file"
         >
           <PaperclipIcon className="w-5 h-5" />
         </button>
+
+        {/* Neon Send Button */}
         <button
           type="submit"
           disabled={!text.trim() && !imagePreview && !fileInfo}
-          className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg px-4 py-2 font-medium hover:from-cyan-600 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="neon-send-btn flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <SendIcon className="w-5 h-5" />
         </button>

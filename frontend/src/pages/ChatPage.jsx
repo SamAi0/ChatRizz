@@ -54,20 +54,6 @@ function ChatPage() {
         onClose={() => setIsProfileSidebarOpen(false)} 
         userId={profileUserId}
       />
-      
-      {/* Floating Profile Button */}
-      <button
-        onClick={() => {
-          setProfileUserId(null); // Show current user's profile
-          setIsProfileSidebarOpen(true);
-        }}
-        className="absolute top-4 right-4 p-2 bg-slate-800/50 hover:bg-slate-700 rounded-full transition-colors border border-slate-700"
-        title="View Profile"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-        </svg>
-      </button>
     </div>
   );
 }

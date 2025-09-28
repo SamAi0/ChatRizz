@@ -21,6 +21,133 @@
   syntax: "<angle>";
 }
 
+/* ChatRizz Custom Styles */
+/* High-tech gradient background */
+.chatrizz-bg {
+  background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glowing message bubbles */
+.glowing-bubble {
+  position: relative;
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.glowing-bubble::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #4567b7, #6c5ce7, #ff69b4);
+  border-radius: 1.25rem;
+  z-index: -1;
+  filter: blur(8px);
+  opacity: 0.7;
+  animation: glow-pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 4px 20px rgba(69, 103, 183, 0.3); }
+  to { box-shadow: 0 4px 30px rgba(108, 92, 231, 0.5); }
+}
+
+@keyframes glow-pulse {
+  from { opacity: 0.5; }
+  to { opacity: 0.8; }
+}
+
+/* Neon send button */
+.neon-send-btn {
+  background: linear-gradient(45deg, #4567b7, #6c5ce7);
+  border: none;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  color: white;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+}
+
+.neon-send-btn:hover {
+  box-shadow: 0 0 25px rgba(108, 92, 231, 0.8);
+  transform: translateY(-2px);
+}
+
+.neon-send-btn::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: linear-gradient(45deg, #4567b7, #6c5ce7, #ff69b4, #4567b7);
+  border-radius: 1.5rem;
+  z-index: -1;
+  filter: blur(20px);
+  animation: neon-pulse 2s linear infinite;
+}
+
+@keyframes neon-pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* Online/Offline indicators */
+.online-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #0f172a;
+  background-color: #10b981;
+}
+
+.offline-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #0f172a;
+  background-color: #64748b;
+}
+
+/* Rounded input bar */
+.rounded-input {
+  border-radius: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.rounded-input:focus {
+  outline: none;
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.3);
+}
+
 .input {
   @apply w-full bg-slate-800/50 border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent;
 }

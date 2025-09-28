@@ -85,10 +85,10 @@ const MessageBubble = ({ message, onImageClick }) => {
     <>
       <div className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}>
         <div
-          className={`chat-bubble relative group ${
+          className={`glowing-bubble relative group ${
             isOwnMessage
-              ? "bg-cyan-600 text-white"
-              : "bg-slate-800 text-slate-200"
+              ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white"
+              : "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
           }`}
         >
           {/* Translation Controls */}
@@ -147,7 +147,7 @@ const MessageBubble = ({ message, onImageClick }) => {
               {/* Show translation if available and user wants to see it */}
               {translation && showTranslatedText ? (
                 <div className="space-y-2">
-                  <p className="bg-primary/20 p-2 rounded border-l-2 border-primary/50">
+                  <p className="bg-white/20 p-2 rounded border-l-2 border-white/50">
                     {translation.translatedText}
                   </p>
                   {showOriginal && (
@@ -155,23 +155,18 @@ const MessageBubble = ({ message, onImageClick }) => {
                       Original: {message.text}
                     </p>
                   )}
-                  <div className="text-xs opacity-60 flex items-center gap-1">
-                    <Languages className="w-3 h-3" />
-                    <span>{translation.fromLanguage} → {translation.toLanguage}</span>
+                  {/* Sleek Auto-Translate Tag */}
+                  <div className="text-xs flex items-center gap-1 bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full w-fit">
+                    <Languages className="w-3 h-3 text-cyan-400" />
+                    <span className="font-medium">{translation.fromLanguage} → {translation.toLanguage}</span>
                     {autoTranslate && (
-                      <span className="badge badge-primary badge-xs ml-1">Auto</span>
-                    )}
-                    {translation.cached && (
-                      <span className="badge badge-ghost badge-xs ml-1">Cached</span>
-                    )}
-                    {translation.provider === 'rapidapi' && (
-                      <span className="badge badge-info badge-xs ml-1">RapidAPI</span>
+                      <span className="badge badge-primary badge-xs ml-1 bg-cyan-500/20 text-cyan-300 border-0">AUTO</span>
                     )}
                     {translation.provider === 'openai' && (
-                      <span className="badge badge-success badge-xs ml-1">OpenAI</span>
+                      <span className="badge badge-success badge-xs ml-1 bg-green-500/20 text-green-300 border-0">AI</span>
                     )}
-                    {translation.provider === 'fallback' && (
-                      <span className="badge badge-warning badge-xs ml-1">Fallback</span>
+                    {translation.provider === 'rapidapi' && (
+                      <span className="badge badge-info badge-xs ml-1 bg-blue-500/20 text-blue-300 border-0">API</span>
                     )}
                   </div>
                 </div>
@@ -204,7 +199,7 @@ const MessageBubble = ({ message, onImageClick }) => {
           )}
 
           {/* Message metadata */}
-          <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
+          <p className="text-xs mt-1 opacity-90 flex items-center gap-1">
             {new Date(message.createdAt).toLocaleTimeString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
