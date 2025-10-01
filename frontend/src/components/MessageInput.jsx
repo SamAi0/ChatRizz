@@ -3,13 +3,17 @@ import useKeyboardSound from "../hooks/useKeyboardSound";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
-import { ImageIcon, SendIcon, XIcon, PaperclipIcon, SmileIcon } from "lucide-react";
+import { ImageIcon, SendIcon, XIcon, PaperclipIcon, SmileIcon, SparklesIcon, LanguagesIcon } from "lucide-react";
+import DefaultMessagesManager from "./DefaultMessagesManager";
+import TranslationSettingsPanel from "./TranslationSettingsPanel";
 
 function MessageInput() {
   const { playRandomKeyStrokeSound } = useKeyboardSound();
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [fileInfo, setFileInfo] = useState(null); // {url, type, name}
+  const [showDefaultMessages, setShowDefaultMessages] = useState(false);
+  const [showTranslationSettings, setShowTranslationSettings] = useState(false);
 
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -112,6 +116,26 @@ function MessageInput() {
         />
         <input type="file" accept="*/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} />
 
+        {/* Translation Settings Button */}
+        <button
+          type="button"
+          onClick={() => setShowTranslationSettings(true)}
+          className="bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-3 transition-colors flex items-center justify-center"
+          title="Translation settings"
+        >
+          <LanguagesIcon className="w-5 h-5" />
+        </button>
+
+        {/* Quick Messages Button */}
+        <button
+          type="button"
+          onClick={() => setShowDefaultMessages(true)}
+          className="bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-3 transition-colors flex items-center justify-center"
+          title="Quick messages"
+        >
+          <SparklesIcon className="w-5 h-5" />
+        </button>
+
         {/* Emoji Button */}
         <button
           type="button"
@@ -153,6 +177,16 @@ function MessageInput() {
           <SendIcon className="w-5 h-5" />
         </button>
       </form>
+
+      {/* Default Messages Manager Modal */}
+      {showDefaultMessages && (
+        <DefaultMessagesManager onClose={() => setShowDefaultMessages(false)} />
+      )}
+
+      {/* Translation Settings Panel */}
+      {showTranslationSettings && (
+        <TranslationSettingsPanel onClose={() => setShowTranslationSettings(false)} />
+      )}
     </div>
   );
 }

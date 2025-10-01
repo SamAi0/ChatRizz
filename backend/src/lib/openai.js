@@ -41,50 +41,15 @@ export function getOpenAIInstance() {
  * Check if OpenAI is available and properly configured
  */
 export function isOpenAIAvailable() {
-  return getOpenAIInstance() !== null;
+  return false; // Always return false to disable OpenAI
 }
 
 /**
  * Test OpenAI connection (optional - for health checks)
  */
 export async function testOpenAIConnection() {
-  const openai = getOpenAIInstance();
-  
-  if (!openai) {
-    return { success: false, message: 'OpenAI not configured' };
-  }
-
-  try {
-    // Simple test request
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "Respond with just 'OK' to confirm connection."
-        },
-        {
-          role: "user",
-          content: "Test connection"
-        }
-      ],
-      max_tokens: 5,
-      temperature: 0
-    });
-
-    if (response.choices[0]?.message?.content) {
-      return { success: true, message: 'OpenAI connection successful' };
-    } else {
-      return { success: false, message: 'Invalid response from OpenAI' };
-    }
-  } catch (error) {
-    console.error('OpenAI connection test failed:', error);
-    return { 
-      success: false, 
-      message: error.message || 'Connection test failed' 
-    };
-  }
+  return { success: false, message: 'OpenAI disabled by configuration' };
 }
 
 // Export singleton instance for backwards compatibility
-export const openai = getOpenAIInstance();
+export const openai = null; // Always null to disable OpenAI

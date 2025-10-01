@@ -24,12 +24,56 @@ const MessageBubble = ({ message, onImageClick }) => {
   const hasText = message.text && message.text.trim().length > 0;
   const isTranslating = isMessageTranslating(message._id);
 
+  // Check for existing translation when component mounts or when message changes
   useEffect(() => {
-    // Auto-translate if enabled and not own message
+    if (!isOwnMessage && hasText && preferredLanguage) {
+      // Check if translation already exists in cache
+      const cached = getMessageTranslation(message._id, 'auto', preferredLanguage);
+      if (cached) {
+        setTranslation(cached);
+        setDetectedLanguage(cached.detectedLanguage);
+        
+        // If auto-translate is enabled, show the translation
+        if (autoTranslate) {
+          setShowTranslatedText(true);
+        }
+      }
+    }
+  }, [message._id, message.text, isOwnMessage, hasText, preferredLanguage, autoTranslate, getMessageTranslation]);
+
+  // Auto-translate when enabled and not own message
+  useEffect(() => {
     if (autoTranslate && !isOwnMessage && hasText && preferredLanguage) {
       handleAutoTranslate();
     }
-  }, [autoTranslate, isOwnMessage, hasText, preferredLanguage, message.text]);
+  }, [autoTranslate, isOwnMessage, hasText, preferredLanguage, message._id, message.text]);
+
+  // Listen for translation updates
+  useEffect(() => {
+    // This effect will run when the translation store updates
+    const checkForTranslation = () => {
+      if (!isOwnMessage && hasText && preferredLanguage) {
+        const cached = getMessageTranslation(message._id, 'auto', preferredLanguage);
+        if (cached && !translation) {
+          setTranslation(cached);
+          setDetectedLanguage(cached.detectedLanguage);
+          
+          // If auto-translate is enabled, show the translation
+          if (autoTranslate) {
+            setShowTranslatedText(true);
+          }
+        }
+      }
+    };
+    
+    // Check immediately
+    checkForTranslation();
+    
+    // Set up a short interval to check for updates (simulating store subscription)
+    const interval = setInterval(checkForTranslation, 500);
+    
+    return () => clearInterval(interval);
+  }, [message._id, isOwnMessage, hasText, preferredLanguage, autoTranslate, translation, getMessageTranslation]);
 
   // Automatically show translated text when auto-translate is enabled and translation is available
   useEffect(() => {
@@ -40,7 +84,7 @@ const MessageBubble = ({ message, onImageClick }) => {
     if (!autoTranslate && showTranslatedText) {
       setShowTranslatedText(false);
     }
-  }, [autoTranslate, translation, isOwnMessage]);
+  }, [autoTranslate, translation, isOwnMessage, showTranslatedText]);
 
   const handleAutoTranslate = async () => {
     if (!hasText || isOwnMessage) return;
@@ -161,9 +205,6 @@ const MessageBubble = ({ message, onImageClick }) => {
                     <span className="font-medium">{translation.fromLanguage} → {translation.toLanguage}</span>
                     {autoTranslate && (
                       <span className="badge badge-primary badge-xs ml-1 bg-cyan-500/20 text-cyan-300 border-0">AUTO</span>
-                    )}
-                    {translation.provider === 'openai' && (
-                      <span className="badge badge-success badge-xs ml-1 bg-green-500/20 text-green-300 border-0">AI</span>
                     )}
                     {translation.provider === 'rapidapi' && (
                       <span className="badge badge-info badge-xs ml-1 bg-blue-500/20 text-blue-300 border-0">API</span>

@@ -116,7 +116,10 @@ export const useChatStore = create((set, get) => ({
           newMessage.text,
           'auto',
           preferredLanguage
-        ).catch(error => {
+        ).then(translation => {
+          // Translation completed successfully
+          console.log('Auto-translation completed for message:', newMessage._id);
+        }).catch(error => {
           console.error('Auto-translation failed for new message:', error);
         });
       }

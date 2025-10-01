@@ -72,9 +72,9 @@ const TranslationSettings = ({ onClose }) => {
             <div className="flex items-center gap-2">
               <div className="badge badge-success">ACTIVE</div>
               <div>
-                <div className="font-medium">Multi-Provider Translation</div>
+                <div className="font-medium">RapidAPI Translation</div>
                 <div className="text-sm opacity-75">
-                  Automatic fallback: OpenAI → RapidAPI → Offline mode
+                  Primary translation provider: RapidAPI
                 </div>
               </div>
             </div>
