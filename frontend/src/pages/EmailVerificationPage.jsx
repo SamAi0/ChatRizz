@@ -1,236 +1,143 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
 import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate, useLocation } from "react-router";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
-import { Mail, Shield, ArrowLeft, RefreshCcw, CheckCircle } from "lucide-react";
-import toast from "react-hot-toast";
+import { ShieldCheckIcon, MailIcon, LoaderIcon } from "lucide-react";
 
 function EmailVerificationPage() {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [verificationData, setVerificationData] = useState(null);
-  
-  const location = useLocation();
+  const [otp, setOtp] = useState("");
+  const { verifyEmail, resendOTP, isVerifyingEmail, isResendingOTP } = useAuthStore();
   const navigate = useNavigate();
-  const { authUser } = useAuthStore();
+  const location = useLocation();
+  
+  // Get email and userId from location state
+  const email = location.state?.email || "";
+  const userId = location.state?.userId || "";
 
+  // Redirect to signup if no email or userId
   useEffect(() => {
-    // Get verification data from location state or redirect
-    const data = location.state;
-    if (!data || !data.email || !data.userId) {
+    if (!email || !userId) {
       navigate("/signup");
-      return;
     }
-    setVerificationData(data);
-  }, [location.state, navigate]);
+  }, [email, userId, navigate]);
 
-  useEffect(() => {
-    // If user is already authenticated, redirect to chat
-    if (authUser) {
-      navigate("/");
-    }
-  }, [authUser, navigate]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!otp || !userId) return;
 
-  useEffect(() => {
-    // Cooldown timer for resend
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
-
-  const handleOtpChange = (index, value) => {
-    if (value.length > 1) {
-      // Handle paste
-      const pastedData = value.slice(0, 6).split("");
-      const newOtp = [...otp];
-      pastedData.forEach((char, i) => {
-        if (i + index < 6 && /^\d$/.test(char)) {
-          newOtp[i + index] = char;
-        }
-      });
-      setOtp(newOtp);
-      
-      // Focus last filled input
-      const lastFilledIndex = Math.min(index + pastedData.length - 1, 5);
-      document.getElementById(`otp-${lastFilledIndex}`)?.focus();
-      return;
-    }
-
-    // Handle single character input
-    if (/^\d$/.test(value) || value === "") {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp);
-
-      // Auto-focus next input
-      if (value !== "" && index < 5) {
-        document.getElementById(`otp-${index + 1}`)?.focus();
-      }
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
-      document.getElementById(`otp-${index - 1}`)?.focus();
-    }
-  };
-
-  const handleVerify = async () => {
-    const otpString = otp.join("");
-    if (otpString.length !== 6) {
-      toast.error("Please enter a valid 6-digit code");
-      return;
-    }
-
-    setIsVerifying(true);
     try {
-      const response = await fetch("/api/auth/verify-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: verificationData.userId,
-          otp: otpString,
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        toast.success(data.message);
-        // The auth cookie will be set automatically
-        window.location.href = "/"; // Force full page reload to update auth state
-      } else {
-        toast.error(data.message);
-        if (data.message.includes("expired")) {
-          setOtp(["", "", "", "", "", ""]);
-        }
-      }
+      await verifyEmail({ userId, otp });
+      navigate("/"); // Changed from "/chat" to "/"
     } catch (error) {
+      // Error is handled in the store with toast
       console.error("Verification error:", error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsVerifying(false);
     }
   };
 
-  const handleResendOtp = async () => {
-    setIsResending(true);
+  const handleResendOTP = async () => {
+    if (!userId) return;
+
     try {
-      const response = await fetch("/api/auth/resend-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: verificationData.userId,
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok) {
-        toast.success(data.message);
-        setOtp(["", "", "", "", "", ""]);
-        setResendCooldown(120); // 2 minutes cooldown
-      } else {
-        toast.error(data.message);
-      }
+      await resendOTP({ userId });
     } catch (error) {
-      console.error("Resend error:", error);
-      toast.error("Failed to resend code. Please try again.");
-    } finally {
-      setIsResending(false);
+      // Error is handled in the store with toast
+      console.error("Resend OTP error:", error);
     }
   };
 
-  if (!verificationData) {
-    return <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-      <div className="text-white">Loading...</div>
-    </div>;
+  // Don't render the form if we don't have required data
+  if (!email || !userId) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900">
-      <div className="relative w-full max-w-md">
+    <div className="w-full flex items-center justify-center p-4 bg-slate-900">
+      <div className="relative w-full max-w-6xl md:h-[800px] h-[650px]">
         <BorderAnimatedContainer>
-          <div className="p-8 text-center">
-            {/* Header */}
-            <div className="mb-8">
-              <div className="w-20 h-20 mx-auto mb-4 bg-cyan-500/20 rounded-full flex items-center justify-center">
-                <Mail className="w-10 h-10 text-cyan-400" />
+          <div className="w-full flex flex-col md:flex-row">
+            {/* FORM COLUMN - LEFT SIDE */}
+            <div className="md:w-1/2 p-8 flex items-center justify-center md:border-r border-slate-600/30">
+              <div className="w-full max-w-md">
+                {/* HEADING TEXT */}
+                <div className="text-center mb-8">
+                  <ShieldCheckIcon className="w-12 h-12 mx-auto text-slate-400 mb-4" />
+                  <h2 className="text-2xl font-bold text-slate-200 mb-2">Verify Your Email</h2>
+                  <p className="text-slate-400">
+                    Please enter the verification code sent to your email address
+                  </p>
+                  <div className="mt-2 text-slate-300 font-medium">{email}</div>
+                </div>
+
+                {/* FORM */}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* OTP INPUT */}
+                  <div>
+                    <label className="auth-input-label">Verification Code</label>
+                    <div className="relative">
+                      <MailIcon className="auth-input-icon" />
+                      <input
+                        type="text"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="input"
+                        placeholder="Enter 6-digit code"
+                        maxLength={6}
+                      />
+                    </div>
+                  </div>
+
+                  {/* SUBMIT BUTTON */}
+                  <button 
+                    className="auth-btn" 
+                    type="submit" 
+                    disabled={isVerifyingEmail || !otp || otp.length < 6}
+                  >
+                    {isVerifyingEmail ? (
+                      <LoaderIcon className="w-full h-5 animate-spin text-center" />
+                    ) : (
+                      "Verify Email"
+                    )}
+                  </button>
+                </form>
+
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={handleResendOTP}
+                    disabled={isResendingOTP}
+                    className="text-slate-400 hover:text-slate-300 transition-colors"
+                  >
+                    {isResendingOTP ? "Sending..." : "Resend Verification Code"}
+                  </button>
+                </div>
+
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="auth-link"
+                  >
+                    Back to Login
+                  </button>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-slate-200 mb-2">Verify Your Email</h2>
-              <p className="text-slate-400 text-sm">
-                We've sent a 6-digit verification code to
-              </p>
-              <p className="text-cyan-400 font-medium">{verificationData.email}</p>
             </div>
 
-            {/* OTP Input */}
-            <div className="mb-6">
-              <div className="flex justify-center gap-2 mb-4">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    maxLength="6"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-lg font-bold border-2 border-slate-600 rounded-lg bg-slate-800 text-white focus:border-cyan-400 focus:outline-none transition-colors"
-                    autoComplete="off"
-                  />
-                ))}
+            {/* FORM ILLUSTRATION - RIGHT SIDE */}
+            <div className="hidden md:w-1/2 md:flex items-center justify-center p-6 bg-gradient-to-bl from-slate-800/20 to-transparent">
+              <div>
+                <img
+                  src="/email-verification.png"
+                  alt="Email verification"
+                  className="w-full h-auto object-contain"
+                />
+                <div className="mt-6 text-center">
+                  <h3 className="text-xl font-medium text-cyan-400">
+                    Secure Your Account
+                  </h3>
+                  <p className="mt-2 text-slate-400">
+                    Email verification helps protect your account from unauthorized access.
+                  </p>
+                </div>
               </div>
-              
-              <p className="text-slate-500 text-xs">
-                Enter the 6-digit code sent to your email
-              </p>
-            </div>
-
-            {/* Verify Button */}
-            <button
-              onClick={handleVerify}
-              disabled={isVerifying || otp.join("").length !== 6}
-              className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-700 disabled:text-slate-500 text-white font-medium py-3 px-4 rounded-lg transition-colors mb-4 flex items-center justify-center gap-2"
-            >
-              {isVerifying ? (
-                <RefreshCcw className="w-4 h-4 animate-spin" />
-              ) : (
-                <CheckCircle className="w-4 h-4" />
-              )}
-              {isVerifying ? "Verifying..." : "Verify Email"}
-            </button>
-
-            {/* Resend Section */}
-            <div className="space-y-3">
-              <p className="text-slate-400 text-sm">Didn't receive the code?</p>
-              <button
-                onClick={handleResendOtp}
-                disabled={isResending || resendCooldown > 0}
-                className="text-cyan-400 hover:text-cyan-300 disabled:text-slate-500 text-sm font-medium transition-colors flex items-center justify-center gap-1 mx-auto"
-              >
-                <RefreshCcw className={`w-3 h-3 ${isResending ? 'animate-spin' : ''}`} />
-                {resendCooldown > 0 
-                  ? `Resend in ${resendCooldown}s` 
-                  : isResending 
-                    ? "Sending..." 
-                    : "Resend Code"
-                }
-              </button>
-            </div>
-
-            {/* Back to signup */}
-            <div className="mt-6 pt-6 border-t border-slate-700">
-              <button
-                onClick={() => navigate("/signup")}
-                className="text-slate-400 hover:text-slate-300 text-sm flex items-center justify-center gap-1 mx-auto transition-colors"
-              >
-                <ArrowLeft className="w-3 h-3" />
-                Back to Sign Up
-              </button>
             </div>
           </div>
         </BorderAnimatedContainer>

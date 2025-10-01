@@ -42,7 +42,7 @@ function App() {
         <Route path="/profile/settings" element={authUser ? <ProfileSettingsPage /> : <Navigate to={"/login"} />} />
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to={"/"} />} />
         <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to={"/"} />} />
-        <Route path="/verify-email" element={!authUser ? <EmailVerificationPage /> : <Navigate to={"/"} />} />
+        <Route path="/verify-email" element={<EmailVerificationPage />} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />

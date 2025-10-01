@@ -39,10 +39,12 @@ export const signup = async (req, res) => {
     if (newUser) {
       // Persist user first but don't issue auth cookie yet
       const savedUser = await newUser.save();
+      console.log("✅ User created:", savedUser.email);
       
       // Generate and send OTP
       const otp = savedUser.generateVerificationOTP();
       await savedUser.save();
+      console.log("✅ OTP generated for user:", savedUser.email, "OTP:", otp);
 
       try {
         await sendOTPEmail(savedUser.email, savedUser.fullName, otp);
@@ -86,6 +88,7 @@ export const login = async (req, res) => {
     if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
     // Check if email is verified
+    console.log("Checking email verification for user:", email, "Verified:", user.emailVerification.isVerified);
     if (!user.emailVerification.isVerified) {
       return res.status(400).json({ 
         message: "Please verify your email before logging in.",
@@ -160,7 +163,9 @@ export const verifyEmail = async (req, res) => {
       return res.status(400).json({ message: "Email is already verified" });
     }
 
+    console.log("Verifying OTP for user:", user.email, "Provided OTP:", otp);
     const verificationResult = user.verifyEmailOTP(otp);
+    console.log("OTP verification result:", verificationResult);
     
     if (verificationResult.success) {
       await user.save();

@@ -26,7 +26,11 @@ app.use(express.json({ limit: "5mb" })); // req.body
 const isDevelopment = ENV.NODE_ENV !== "production";
 const allowedOrigins = [];
 if (ENV.CLIENT_URL) allowedOrigins.push(ENV.CLIENT_URL);
-if (isDevelopment) allowedOrigins.push("http://localhost:5173");
+if (isDevelopment) {
+  allowedOrigins.push("http://localhost:5173");
+  allowedOrigins.push("http://localhost:5174");
+  allowedOrigins.push("http://localhost:5175");
+}
 
 app.use(
   cors({

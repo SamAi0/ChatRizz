@@ -10,6 +10,8 @@ export const useAuthStore = create((set, get) => ({
   isCheckingAuth: true,
   isSigningUp: false,
   isLoggingIn: false,
+  isVerifyingEmail: false,
+  isResendingOTP: false,
   socket: null,
   onlineUsers: [],
 
@@ -105,6 +107,38 @@ export const useAuthStore = create((set, get) => ({
       console.log("Error in update profile:", error);
       toast.error(error?.response?.data?.message || "Profile update failed.");
       throw error;
+    }
+  },
+
+  verifyEmail: async (data) => {
+    set({ isVerifyingEmail: true });
+    try {
+      const res = await axiosInstance.post("/auth/verify-email", data);
+      set({ authUser: res.data.user });
+      toast.success(res.data.message);
+      get().connectSocket();
+      return res.data;
+    } catch (error) {
+      console.error("Email verification error:", error);
+      toast.error(error?.response?.data?.message || "Email verification failed. Check Network tab and server logs.");
+      throw error;
+    } finally {
+      set({ isVerifyingEmail: false });
+    }
+  },
+
+  resendOTP: async (data) => {
+    set({ isResendingOTP: true });
+    try {
+      const res = await axiosInstance.post("/auth/resend-otp", data);
+      toast.success(res.data.message);
+      return res.data;
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      toast.error(error?.response?.data?.message || "Failed to resend OTP. Check Network tab and server logs.");
+      throw error;
+    } finally {
+      set({ isResendingOTP: false });
     }
   },
 

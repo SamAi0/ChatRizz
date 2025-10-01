@@ -7,6 +7,10 @@ import { ENV } from "../lib/env.js";
 const useGmail = ENV.GMAIL_USER && ENV.GMAIL_APP_PASSWORD;
 
 export const sendOTPEmail = async (email, name, otp) => {
+  console.log(`📧 Preparing to send OTP email to: ${email}`);
+  console.log(`📧 Using Gmail: ${useGmail}`);
+  console.log(`📧 Gmail User: ${ENV.GMAIL_USER}`);
+  
   if (useGmail) {
     // Use Gmail SMTP
     try {
@@ -17,6 +21,11 @@ export const sendOTPEmail = async (email, name, otp) => {
         html: createOTPEmailTemplate(name, otp),
       };
 
+      console.log("📧 Sending OTP email via Gmail with options:", {
+        to: mailOptions.to,
+        subject: mailOptions.subject
+      });
+
       const result = await gmailTransporter.sendMail(mailOptions);
       console.log("✅ OTP Email sent via Gmail:", result.messageId);
       return result;
@@ -26,6 +35,7 @@ export const sendOTPEmail = async (email, name, otp) => {
     }
   } else {
     // Fallback to Resend
+    console.log("📧 Sending OTP email via Resend");
     const { data, error } = await resendClient.emails.send({
       from: `${sender.name} <${sender.email}>`,
       to: email,
@@ -44,6 +54,8 @@ export const sendOTPEmail = async (email, name, otp) => {
 };
 
 export const sendWelcomeEmail = async (email, name, clientURL) => {
+  console.log(`📧 Preparing to send welcome email to: ${email}`);
+  
   if (useGmail) {
     // Use Gmail SMTP
     try {
@@ -54,6 +66,11 @@ export const sendWelcomeEmail = async (email, name, clientURL) => {
         html: createWelcomeEmailTemplate(name, clientURL),
       };
 
+      console.log("📧 Sending welcome email via Gmail with options:", {
+        to: mailOptions.to,
+        subject: mailOptions.subject
+      });
+
       const result = await gmailTransporter.sendMail(mailOptions);
       console.log("✅ Welcome Email sent via Gmail:", result.messageId);
       return result;
@@ -63,6 +80,7 @@ export const sendWelcomeEmail = async (email, name, clientURL) => {
     }
   } else {
     // Fallback to Resend
+    console.log("📧 Sending welcome email via Resend");
     const { data, error } = await resendClient.emails.send({
       from: `${sender.name} <${sender.email}>`,
       to: email,
