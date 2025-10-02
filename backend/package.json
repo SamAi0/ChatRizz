@@ -1,17 +1,16 @@
 {
-  "name": "chat-rizz-backend",
+  "name": "backend",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon --trace-deprecation src/server.js",
-    "start": "node src/server.js",
-    "build": "cd ../frontend && npm install && npm run build"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
   },
   "keywords": [],
-  "type": "module",
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@arcjet/inspect": "^1.0.0-beta.10",
     "@arcjet/node": "^1.0.0-beta.10",
@@ -26,7 +25,6 @@
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.6",
-    "openai": "^5.22.1",
     "resend": "^6.0.2",
     "socket.io": "^4.8.1"
   },

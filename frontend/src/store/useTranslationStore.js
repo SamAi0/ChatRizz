@@ -18,11 +18,11 @@ export const useTranslationStore = create(
       isTranslating: false,
       translationError: null,
       
-      // Message translations cache
-      messageTranslations: new Map(),
+      // Message translations cache (using plain object for persistence)
+      messageTranslations: {},
       
-      // Loading states for individual messages
-      translatingMessages: new Set(),
+      // Loading states for individual messages (using array for persistence)
+      translatingMessages: [],
 
       // Actions
       setPreferredLanguage: (language) => {
@@ -67,20 +67,20 @@ export const useTranslationStore = create(
         const { translatingMessages, messageTranslations } = get();
         
         // Check if already translating this message
-        if (translatingMessages.has(messageId)) {
+        if (translatingMessages.includes(messageId)) {
           return null;
         }
 
         // Check cache first
         const cacheKey = `${messageId}-${fromLang}-${targetLang}`;
-        if (messageTranslations.has(cacheKey)) {
-          return messageTranslations.get(cacheKey);
+        if (messageTranslations[cacheKey]) {
+          return messageTranslations[cacheKey];
         }
 
         try {
           // Mark as translating
           set({
-            translatingMessages: new Set([...translatingMessages, messageId]),
+            translatingMessages: [...translatingMessages, messageId],
             translationError: null
           });
 
@@ -92,12 +92,13 @@ export const useTranslationStore = create(
           );
 
           // Cache the translation
-          const newTranslations = new Map(messageTranslations);
-          newTranslations.set(cacheKey, result.translation);
+          const newTranslations = {
+            ...messageTranslations,
+            [cacheKey]: result.translation
+          };
 
-          // Remove from translating set
-          const newTranslatingMessages = new Set(translatingMessages);
-          newTranslatingMessages.delete(messageId);
+          // Remove from translating array
+          const newTranslatingMessages = translatingMessages.filter(id => id !== messageId);
 
           set({
             messageTranslations: newTranslations,
@@ -109,9 +110,8 @@ export const useTranslationStore = create(
         } catch (error) {
           console.error('Translation failed:', error);
           
-          // Remove from translating set
-          const newTranslatingMessages = new Set(translatingMessages);
-          newTranslatingMessages.delete(messageId);
+          // Remove from translating array
+          const newTranslatingMessages = translatingMessages.filter(id => id !== messageId);
           
           set({
             translatingMessages: newTranslatingMessages,
@@ -157,12 +157,12 @@ export const useTranslationStore = create(
       // Get cached translation for a message
       getMessageTranslation: (messageId, fromLang, toLang) => {
         const cacheKey = `${messageId}-${fromLang}-${toLang}`;
-        return get().messageTranslations.get(cacheKey);
+        return get().messageTranslations[cacheKey];
       },
 
       // Check if message is being translated
       isMessageTranslating: (messageId) => {
-        return get().translatingMessages.has(messageId);
+        return get().translatingMessages.includes(messageId);
       },
 
       // Clear translation cache
@@ -170,7 +170,7 @@ export const useTranslationStore = create(
         try {
           await translationService.clearCache();
           set({ 
-            messageTranslations: new Map(),
+            messageTranslations: {},
             translationError: null 
           });
         } catch (error) {
@@ -184,8 +184,8 @@ export const useTranslationStore = create(
       clearLocalCache: () => {
         translationService.clearLocalCache();
         set({ 
-          messageTranslations: new Map(),
-          translatingMessages: new Set()
+          messageTranslations: {},
+          translatingMessages: []
         });
       },
 
@@ -198,8 +198,8 @@ export const useTranslationStore = create(
             server: serverStats.cacheStats,
             local: localStats,
             messageCache: {
-              size: get().messageTranslations.size,
-              translating: get().translatingMessages.size
+              size: Object.keys(get().messageTranslations).length,
+              translating: get().translatingMessages.length
             }
           };
         } catch (error) {
@@ -218,7 +218,8 @@ export const useTranslationStore = create(
       partialize: (state) => ({
         preferredLanguage: state.preferredLanguage,
         autoTranslate: state.autoTranslate,
-        showOriginal: state.showOriginal
+        showOriginal: state.showOriginal,
+        messageTranslations: state.messageTranslations // Now persists correctly
       })
     }
   )

@@ -171,7 +171,7 @@ const TranslationPanel = ({ message, onClose }) => {
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-base-300">
           <div className="text-xs text-base-content/60">
-            Powered by OpenAI Translation
+            Powered by RapidAPI Translation
           </div>
           <div className="flex gap-2">
             <button

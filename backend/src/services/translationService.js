@@ -1,4 +1,3 @@
-import { getOpenAIInstance } from '../lib/openai.js';
 import { 
   translateWithRapidAPI, 
   detectLanguageWithRapidAPI, 
@@ -43,13 +42,11 @@ export const SUPPORTED_LANGUAGES = {
 
 class TranslationService {
   constructor() {
-    this.openai = getOpenAIInstance();
     this.cache = new Map(); // Simple in-memory cache
     this.cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
-    this.primaryProvider = this.openai ? 'openai' : (isRapidAPIAvailable() ? 'rapidapi' : null);
+    this.primaryProvider = isRapidAPIAvailable() ? 'rapidapi' : null;
     
     console.log('Translation Service initialized:', {
-      openai: !!this.openai,
       rapidapi: isRapidAPIAvailable(),
       primaryProvider: this.primaryProvider
     });
@@ -70,46 +67,14 @@ class TranslationService {
   }
 
   /**
-   * Detect the language of the given text with automatic fallback
+   * Detect the language of the given text with RapidAPI as primary provider
    */
   async detectLanguage(text) {
     if (!text || text.trim().length === 0) {
       return 'en'; // Default to English for empty text
     }
 
-    // Try OpenAI first
-    if (this.openai) {
-      try {
-        const response = await this.openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: "You are a language detection system. Respond with only the ISO 639-1 language code (e.g., 'en', 'es', 'fr') for the detected language. If uncertain, respond with 'en'."
-            },
-            {
-              role: "user",
-              content: `Detect the language of this text: "${text}"`
-            }
-          ],
-          max_tokens: 10,
-          temperature: 0
-        });
-
-        const detectedLang = response.choices[0]?.message?.content?.trim().toLowerCase();
-        
-        // Validate the detected language is in our supported list
-        if (SUPPORTED_LANGUAGES[detectedLang]) {
-          return detectedLang;
-        }
-        
-        return 'en'; // Fallback to English
-      } catch (error) {
-        console.warn('OpenAI language detection failed, trying RapidAPI fallback:', error.message);
-      }
-    }
-
-    // Fallback to RapidAPI
+    // Use RapidAPI for language detection
     if (isRapidAPIAvailable()) {
       try {
         const detectedLang = await detectLanguageWithRapidAPI(text);
@@ -124,46 +89,7 @@ class TranslationService {
   }
 
   /**
-   * Translate using OpenAI
-   */
-  async translateWithOpenAI(text, sourceLanguage, toLang) {
-    const sourceLangName = SUPPORTED_LANGUAGES[sourceLanguage] || sourceLanguage;
-    const targetLangName = SUPPORTED_LANGUAGES[toLang] || toLang;
-
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `You are a professional translator. Translate the given text from ${sourceLangName} to ${targetLangName}. 
-          
-          Rules:
-          - Maintain the original tone and context
-          - Preserve formatting and special characters
-          - If the text contains names, places, or technical terms, keep them appropriate for the target language
-          - Respond with only the translated text, no explanations
-          - If the text is already in the target language, return it as is`
-        },
-        {
-          role: "user",
-          content: text
-        }
-      ],
-      max_tokens: Math.max(100, text.length * 2),
-      temperature: 0.3
-    });
-
-    const translatedText = response.choices[0]?.message?.content?.trim();
-    
-    if (!translatedText) {
-      throw new Error('No translation received from OpenAI');
-    }
-
-    return { translatedText };
-  }
-
-  /**
-   * Fallback translation when OpenAI is unavailable
+   * Fallback translation when providers are unavailable
    */
   getMockTranslation(text, fromLang, toLang) {
     const languages = SUPPORTED_LANGUAGES;
@@ -176,7 +102,7 @@ class TranslationService {
   }
 
   /**
-   * Translate text from one language to another with automatic fallback
+   * Translate text from one language to another using RapidAPI as primary provider
    */
   async translateText(text, fromLang = 'auto', toLang = 'en') {
     if (!text || text.trim().length === 0) {
@@ -212,30 +138,7 @@ class TranslationService {
       };
     }
 
-    // Try OpenAI first
-    if (this.openai) {
-      try {
-        const result = await this.translateWithOpenAI(text, sourceLanguage, toLang);
-        
-        // Cache the result
-        this.cache.set(cacheKey, {
-          translation: result.translatedText,
-          timestamp: Date.now(),
-          provider: 'openai'
-        });
-
-        return {
-          ...result,
-          detectedLanguage: sourceLanguage,
-          cached: false,
-          provider: 'openai'
-        };
-      } catch (error) {
-        console.warn('OpenAI translation failed, trying RapidAPI fallback:', error.message);
-      }
-    }
-
-    // Fallback to RapidAPI
+    // Use RapidAPI for translation
     if (isRapidAPIAvailable()) {
       try {
         const result = await translateWithRapidAPI(text, sourceLanguage, toLang);
@@ -267,10 +170,6 @@ class TranslationService {
    * Translate multiple texts in batch
    */
   async translateBatch(texts, fromLang = 'auto', toLang = 'en') {
-    if (!this.openai) {
-      throw new Error('OpenAI API not available. Please configure your API key.');
-    }
-
     if (!Array.isArray(texts) || texts.length === 0) {
       return [];
     }
