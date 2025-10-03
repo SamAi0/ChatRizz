@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
 import { MessageCircleIcon, LockIcon, MailIcon, UserIcon, LoaderIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router";
+import Logo from "../components/Logo";
 
 function SignUpPage() {
   const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
@@ -31,6 +32,9 @@ function SignUpPage() {
   return (
     <div className="w-full flex items-center justify-center p-4 bg-slate-900">
       <div className="relative w-full max-w-6xl md:h-[800px] h-[650px]">
+        <div className="absolute top-4 left-4 z-10">
+          <Logo size="xl" animated={true} />
+        </div>
         <BorderAnimatedContainer>
           <div className="w-full flex flex-col md:flex-row">
             {/* FORM CLOUMN - LEFT SIDE */}

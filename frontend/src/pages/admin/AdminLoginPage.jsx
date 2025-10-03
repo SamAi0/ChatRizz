@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { EyeIcon, EyeOffIcon, ShieldCheckIcon } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
 import toast from "react-hot-toast";
+import Logo from "../../components/Logo";
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -46,7 +47,10 @@ const AdminLoginPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md relative">
+        <div className="absolute top-4 left-4 z-10">
+          <Logo size="xl" animated={true} />
+        </div>
         {/* Header */}
         <div className="text-center mb-8">
           <div className="bg-red-600/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">

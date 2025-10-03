@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
 import toast from "react-hot-toast";
+import Logo from "../../components/Logo";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -138,6 +139,12 @@ const AdminDashboard = () => {
       <div className="bg-slate-800 border-b border-slate-700 p-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <Logo 
+              size="lg" 
+              className="mr-2"
+              onClick={() => navigate("/")}
+              animated={true}
+            />
             <ShieldCheckIcon className="w-8 h-8 text-red-400" />
             <div>
               <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>

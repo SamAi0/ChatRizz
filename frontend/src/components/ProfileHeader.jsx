@@ -19,6 +19,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import { useProfileStore } from "../store/useProfileStore";
 import { useThemeStore } from "../store/useThemeStore";
+import Logo from "./Logo";
 
 const mouseClickSound = new Audio("/sounds/mouse-click.mp3");
 
@@ -77,6 +78,15 @@ function ProfileHeader() {
 
   return (
     <div className="p-6 border-b border-slate-700/50 chatrizz-bg">
+      {/* LOGO at the top */}
+      <div className="flex justify-center mb-4">
+        <Logo 
+          size="xl" 
+          onClick={() => navigate("/")}
+          animated={true}
+        />
+      </div>
+      
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* AVATAR */}
@@ -161,7 +171,7 @@ function ProfileHeader() {
             )}
           </div>
         </div>
-
+        
         {/* QUICK SETTINGS ICONS */}
         <div className="flex gap-2 items-center">
           <button

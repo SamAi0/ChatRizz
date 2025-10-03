@@ -38,6 +38,7 @@ import ProfileThemeCustomizer from "../components/ProfileThemeCustomizer";
 import ProfileGalleryManager from "../components/ProfileGalleryManager";
 import ProfileActivityTimeline from "../components/ProfileActivityTimeline";
 import toast from "react-hot-toast";
+import Logo from "../components/Logo";
 
 const ProfilePage = () => {
   const { userId } = useParams();
@@ -259,6 +260,12 @@ const ProfilePage = () => {
             >
               <ArrowLeftIcon className="w-5 h-5 text-slate-200" />
             </button>
+            <Logo 
+              size="lg" 
+              className="mr-2"
+              onClick={() => navigate("/")}
+              animated={true}
+            />
             <h1 className="text-xl font-semibold text-slate-200">
               {isOwnProfile ? "My Profile" : `${profile.fullName}'s Profile`}
             </h1>

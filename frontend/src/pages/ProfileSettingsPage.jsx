@@ -18,6 +18,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { useProfileStore } from "../store/useProfileStore";
 import { useTranslationStore } from "../store/useTranslationStore";
 import toast from "react-hot-toast";
+import Logo from "../components/Logo";
 
 const ProfileSettingsPage = () => {
   const navigate = useNavigate();
@@ -285,13 +286,20 @@ const ProfileSettingsPage = () => {
       <div className="bg-slate-800/50 border-b border-slate-700/50 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500">
               <ArrowLeftIcon className="w-5 h-5 text-slate-200" />
             </button>
+            <Logo 
+              size="lg" 
+              onClick={() => navigate("/")}
+              animated={true}
+            />
             <h1 className="text-xl font-semibold text-slate-200">Settings</h1>
           </div>
-          <div className="text-sm text-slate-400">
-            {profile?.username ? `@${profile.username}` : ""}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-slate-400">
+              {profile?.username ? `@${profile.username}` : ""}
+            </div>
           </div>
         </div>
       </div>
@@ -304,7 +312,7 @@ const ProfileSettingsPage = () => {
               <div className="space-y-1">
                 <button 
                   onClick={() => setActiveTab("profile")} 
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "profile" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "profile" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 >
                   <UserIcon className="w-5 h-5" />
                   <span>Profile</span>
@@ -312,7 +320,7 @@ const ProfileSettingsPage = () => {
                 
                 <button 
                   onClick={() => setActiveTab("privacy")} 
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "privacy" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "privacy" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 >
                   <ShieldCheckIcon className="w-5 h-5" />
                   <span>Privacy</span>
@@ -320,7 +328,7 @@ const ProfileSettingsPage = () => {
                 
                 <button 
                   onClick={() => setActiveTab("preferences")} 
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "preferences" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "preferences" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 >
                   <BellIcon className="w-5 h-5" />
                   <span>Preferences</span>
@@ -328,7 +336,7 @@ const ProfileSettingsPage = () => {
                 
                 <button 
                   onClick={() => setActiveTab("translation")} 
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "translation" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "translation" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 >
                   <GlobeIcon className="w-5 h-5" />
                   <span>Translation</span>
@@ -336,7 +344,7 @@ const ProfileSettingsPage = () => {
                 
                 <button 
                   onClick={() => setActiveTab("security")} 
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "security" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "security" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 >
                   <LockIcon className="w-5 h-5" />
                   <span>Security</span>
@@ -344,7 +352,7 @@ const ProfileSettingsPage = () => {
                 
                 <button 
                   onClick={() => setActiveTab("data")} 
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "data" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === "data" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-300 hover:bg-slate-700/50"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
                 >
                   <UploadIcon className="w-5 h-5" />
                   <span>Data Management</span>
@@ -368,7 +376,7 @@ const ProfileSettingsPage = () => {
                         type="text"
                         value={profileSettings.fullName}
                         onChange={(e) => handleProfileChange("fullName", e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors focus:ring-2 focus:ring-cyan-500"
                         placeholder="Enter your full name"
                       />
                     </div>
@@ -388,7 +396,7 @@ const ProfileSettingsPage = () => {
                       <textarea
                         value={profileSettings.bio}
                         onChange={(e) => handleProfileChange("bio", e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors focus:ring-2 focus:ring-cyan-500"
                         placeholder="Tell us about yourself"
                         rows="4"
                       />
@@ -400,7 +408,7 @@ const ProfileSettingsPage = () => {
                         type="text"
                         value={profileSettings.location}
                         onChange={(e) => handleProfileChange("location", e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors focus:ring-2 focus:ring-cyan-500"
                         placeholder="Where are you from?"
                       />
                     </div>
@@ -411,7 +419,7 @@ const ProfileSettingsPage = () => {
                         type="url"
                         value={profileSettings.website}
                         onChange={(e) => handleProfileChange("website", e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors focus:ring-2 focus:ring-cyan-500"
                         placeholder="https://example.com"
                       />
                     </div>
@@ -422,7 +430,7 @@ const ProfileSettingsPage = () => {
                         type="tel"
                         value={profileSettings.phone}
                         onChange={(e) => handleProfileChange("phone", e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors focus:ring-2 focus:ring-cyan-500"
                         placeholder="+1 (555) 123-4567"
                       />
                     </div>
@@ -433,7 +441,7 @@ const ProfileSettingsPage = () => {
                         type="date"
                         value={profileSettings.dateOfBirth}
                         onChange={(e) => handleProfileChange("dateOfBirth", e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none transition-colors focus:ring-2 focus:ring-cyan-500"
                       />
                     </div>
                   </div>
@@ -442,7 +450,7 @@ const ProfileSettingsPage = () => {
                     <button
                       type="submit"
                       disabled={isUpdatingProfile}
-                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 flex items-center gap-2 font-medium"
+                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 flex items-center gap-2 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <SaveIcon className="w-4 h-4" />
                       Save Changes
@@ -469,7 +477,7 @@ const ProfileSettingsPage = () => {
                           <select
                             value={privacySettings.profileVisibility}
                             onChange={(e) => handlePrivacyChange("profileVisibility", e.target.value)}
-                            className="px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                            className="px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                           >
                             <option value="public">Public</option>
                             <option value="contacts">Contacts Only</option>
@@ -489,7 +497,8 @@ const ProfileSettingsPage = () => {
                           <button
                             type="button"
                             onClick={() => handlePrivacyChange("showEmail", !privacySettings.showEmail)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${privacySettings.showEmail ? "bg-cyan-600" : "bg-slate-600"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${privacySettings.showEmail ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            aria-pressed={privacySettings.showEmail}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${privacySettings.showEmail ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
@@ -502,7 +511,8 @@ const ProfileSettingsPage = () => {
                           <button
                             type="button"
                             onClick={() => handlePrivacyChange("showPhone", !privacySettings.showPhone)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${privacySettings.showPhone ? "bg-cyan-600" : "bg-slate-600"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${privacySettings.showPhone ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            aria-pressed={privacySettings.showPhone}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${privacySettings.showPhone ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
@@ -515,7 +525,8 @@ const ProfileSettingsPage = () => {
                           <button
                             type="button"
                             onClick={() => handlePrivacyChange("showLocation", !privacySettings.showLocation)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${privacySettings.showLocation ? "bg-cyan-600" : "bg-slate-600"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${privacySettings.showLocation ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            aria-pressed={privacySettings.showLocation}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${privacySettings.showLocation ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
@@ -533,7 +544,7 @@ const ProfileSettingsPage = () => {
                           <select
                             value={privacySettings.allowMessagesFrom}
                             onChange={(e) => handlePrivacyChange("allowMessagesFrom", e.target.value)}
-                            className="px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                            className="px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                           >
                             <option value="everyone">Everyone</option>
                             <option value="contacts">Contacts Only</option>
@@ -547,7 +558,7 @@ const ProfileSettingsPage = () => {
                   <div className="flex justify-end pt-4">
                     <button
                       type="submit"
-                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium"
+                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <SaveIcon className="w-4 h-4" />
                       Save Changes
@@ -572,7 +583,7 @@ const ProfileSettingsPage = () => {
                           <select
                             value={preferences.theme}
                             onChange={(e) => handlePreferencesChange("theme", e.target.value)}
-                            className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                            className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                           >
                             <option value="dark">Dark</option>
                             <option value="light">Light</option>
@@ -591,7 +602,8 @@ const ProfileSettingsPage = () => {
                           <button
                             type="button"
                             onClick={() => handlePreferencesChange("notificationsEnabled", !preferences.notificationsEnabled)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.notificationsEnabled ? "bg-cyan-600" : "bg-slate-600"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.notificationsEnabled ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            aria-pressed={preferences.notificationsEnabled}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${preferences.notificationsEnabled ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
@@ -604,7 +616,8 @@ const ProfileSettingsPage = () => {
                           <button
                             type="button"
                             onClick={() => handlePreferencesChange("messageNotifications", !preferences.messageNotifications)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.messageNotifications ? "bg-cyan-600" : "bg-slate-600"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.messageNotifications ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            aria-pressed={preferences.messageNotifications}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${preferences.messageNotifications ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
@@ -617,7 +630,8 @@ const ProfileSettingsPage = () => {
                           <button
                             type="button"
                             onClick={() => handlePreferencesChange("soundEnabled", !preferences.soundEnabled)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.soundEnabled ? "bg-cyan-600" : "bg-slate-600"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.soundEnabled ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            aria-pressed={preferences.soundEnabled}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${preferences.soundEnabled ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
@@ -630,7 +644,8 @@ const ProfileSettingsPage = () => {
                           <button
                             type="button"
                             onClick={() => handlePreferencesChange("emailNotifications", !preferences.emailNotifications)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.emailNotifications ? "bg-cyan-600" : "bg-slate-600"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.emailNotifications ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                            aria-pressed={preferences.emailNotifications}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${preferences.emailNotifications ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
@@ -642,7 +657,7 @@ const ProfileSettingsPage = () => {
                   <div className="flex justify-end pt-4">
                     <button
                       type="submit"
-                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium"
+                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <SaveIcon className="w-4 h-4" />
                       Save Changes
@@ -657,7 +672,7 @@ const ProfileSettingsPage = () => {
               <div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700/50">
                 <h2 className="text-xl font-semibold text-slate-200 mb-6">Translation Settings</h2>
                 
-                <div className="space-y-6">
+                <form onSubmit={handleSavePreferences} className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">Preferred Language</label>
                     <select
@@ -666,7 +681,7 @@ const ProfileSettingsPage = () => {
                         handlePreferencesChange("language", e.target.value);
                         setPreferredLanguage(e.target.value);
                       }}
-                      className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                      className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <option value="en">English</option>
                       <option value="es">Spanish</option>
@@ -694,7 +709,8 @@ const ProfileSettingsPage = () => {
                           handlePreferencesChange("autoTranslate", newAutoTranslate);
                           setAutoTranslate(newAutoTranslate);
                         }}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.autoTranslate ? "bg-cyan-600" : "bg-slate-600"}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.autoTranslate ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                        aria-pressed={preferences.autoTranslate}
                       >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${preferences.autoTranslate ? "translate-x-6" : "translate-x-1"}`} />
                       </button>
@@ -712,7 +728,8 @@ const ProfileSettingsPage = () => {
                           handlePreferencesChange("showOriginal", newShowOriginal);
                           setShowOriginal(newShowOriginal);
                         }}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.showOriginal ? "bg-cyan-600" : "bg-slate-600"}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full ${preferences.showOriginal ? "bg-cyan-600" : "bg-slate-600"} focus:outline-none focus:ring-2 focus:ring-cyan-500`}
+                        aria-pressed={preferences.showOriginal}
                       >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${preferences.showOriginal ? "translate-x-6" : "translate-x-1"}`} />
                       </button>
@@ -721,17 +738,14 @@ const ProfileSettingsPage = () => {
                   
                   <div className="flex justify-end pt-4">
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleSavePreferences(e);
-                      }}
-                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium"
+                      type="submit"
+                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <SaveIcon className="w-4 h-4" />
                       Save Changes
                     </button>
                   </div>
-                </div>
+                </form>
               </div>
             )}
 
@@ -749,13 +763,13 @@ const ProfileSettingsPage = () => {
                           type={showCurrentPassword ? "text" : "password"}
                           value={passwordData.currentPassword}
                           onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
-                          className="w-full px-4 py-2.5 pr-12 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                          className="w-full px-4 py-2.5 pr-12 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                           required
                         />
                         <button
                           type="button"
                           onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded"
                         >
                           {showCurrentPassword ? (
                             <EyeOffIcon className="h-5 w-5 text-slate-400" />
@@ -773,14 +787,14 @@ const ProfileSettingsPage = () => {
                           type={showNewPassword ? "text" : "password"}
                           value={passwordData.newPassword}
                           onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
-                          className="w-full px-4 py-2.5 pr-12 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                          className="w-full px-4 py-2.5 pr-12 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                           required
                           minLength="6"
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded"
                         >
                           {showNewPassword ? (
                             <EyeOffIcon className="h-5 w-5 text-slate-400" />
@@ -799,13 +813,13 @@ const ProfileSettingsPage = () => {
                           type={showConfirmPassword ? "text" : "password"}
                           value={passwordData.confirmPassword}
                           onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
-                          className="w-full px-4 py-2.5 pr-12 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none"
+                          className="w-full px-4 py-2.5 pr-12 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                           required
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded"
                         >
                           {showConfirmPassword ? (
                             <EyeOffIcon className="h-5 w-5 text-slate-400" />
@@ -820,7 +834,7 @@ const ProfileSettingsPage = () => {
                   <div className="flex justify-end pt-4">
                     <button
                       type="submit"
-                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium"
+                      className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <SaveIcon className="w-4 h-4" />
                       Change Password
@@ -845,7 +859,7 @@ const ProfileSettingsPage = () => {
                     <button
                       onClick={handleExportData}
                       disabled={isExportingData}
-                      className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors flex items-center gap-2 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <DownloadIcon className="w-4 h-4" />
                       {isExportingData ? "Exporting..." : "Export Data"}
@@ -868,7 +882,7 @@ const ProfileSettingsPage = () => {
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isImportingData}
-                      className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-2 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <UploadIcon className="w-4 h-4" />
                       {isImportingData ? "Importing..." : "Import Data"}
@@ -890,14 +904,14 @@ const ProfileSettingsPage = () => {
                           type="text"
                           value={dataManagement.confirmDelete}
                           onChange={(e) => handleDataManagementChange("confirmDelete", e.target.value)}
-                          className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-red-500 focus:outline-none"
+                          className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-200 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
                           placeholder="DELETE"
                         />
                       </div>
                       <button
                         onClick={handleDeleteAccount}
                         disabled={isDeletingAccount || dataManagement.confirmDelete !== "DELETE"}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                       >
                         <Trash2Icon className="w-4 h-4" />
                         {isDeletingAccount ? "Deleting..." : "Delete Account"}
