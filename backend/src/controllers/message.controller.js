@@ -34,6 +34,53 @@ export const getMessagesByUserId = async (req, res) => {
   }
 };
 
+// New function to get all media sent by a user
+export const getUserMedia = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Find all messages where the user is the sender and they have media
+    const mediaMessages = await Message.find({
+      senderId: userId,
+      $or: [
+        { image: { $exists: true, $ne: null } },
+        { attachmentUrl: { $exists: true, $ne: null } }
+      ]
+    })
+    .sort({ createdAt: -1 }) // Sort by newest first
+    .select("image attachmentUrl attachmentType createdAt text");
+
+    // Format the media data for the gallery
+    const mediaItems = mediaMessages.map(msg => {
+      if (msg.image) {
+        return {
+          id: msg._id,
+          type: "image",
+          url: msg.image,
+          thumbnail: msg.image, // Could generate a thumbnail URL here if needed
+          createdAt: msg.createdAt,
+          caption: msg.text || ""
+        };
+      } else if (msg.attachmentUrl) {
+        return {
+          id: msg._id,
+          type: "file",
+          url: msg.attachmentUrl,
+          fileType: msg.attachmentType || "unknown",
+          createdAt: msg.createdAt,
+          caption: msg.text || ""
+        };
+      }
+      return null;
+    }).filter(item => item !== null); // Remove any null items
+
+    res.status(200).json(mediaItems);
+  } catch (error) {
+    console.log("Error in getUserMedia controller: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const sendMessage = async (req, res) => {
   try {
     const { text, image, attachmentUrl, attachmentType } = req.body;

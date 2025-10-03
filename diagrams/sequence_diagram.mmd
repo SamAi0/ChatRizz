@@ -1,0 +1,65 @@
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+    participant D as Database
+    participant S as Socket.IO
+    participant C as Cloudinary
+    participant T as Translation API
+
+    U->>F: Open Chat App
+    F->>B: Authentication Request
+    B->>D: Validate Credentials
+    D-->>B: User Data
+    B-->>F: Auth Success
+    F->>B: Request Chat List
+    B->>D: Fetch Chat Partners
+    D-->>B: Chat Partners Data
+    B-->>F: Display Chat List
+    
+    U->>F: Select Chat Partner
+    F->>B: Request Message History
+    B->>D: Fetch Messages
+    D-->>B: Messages Data
+    B-->>F: Display Messages
+    
+    U->>F: Type Message
+    F->>B: Send Message Request
+    B->>D: Save Message
+    D-->>B: Confirmation
+    B->>S: Emit New Message
+    S->>F: Real-time Update
+    F->>U: Display Message
+    
+    U->>F: Upload Image
+    F->>C: Upload Image
+    C-->>F: Image URL
+    F->>B: Send Image Message
+    B->>D: Save Message with Image
+    D-->>B: Confirmation
+    B->>S: Emit New Image Message
+    S->>F: Real-time Update
+    F->>U: Display Image Message
+    
+    U->>F: Request Translation
+    F->>B: Translation Request
+    B->>T: Call Translation API
+    T-->>B: Translated Text
+    B-->>F: Send Translation
+    F->>U: Display Translation
+    
+    U->>F: Mark as Seen
+    F->>B: Seen Request
+    B->>D: Update Message Status
+    D-->>B: Confirmation
+    B->>S: Emit Seen Event
+    S->>F: Real-time Update
+    
+    style U fill:#4A90E2,stroke:#333,stroke-width:2px
+    style F fill:#50C878,stroke:#333,stroke-width:2px
+    style B fill:#FF6B6B,stroke:#333,stroke-width:2px
+    style D fill:#FFD93D,stroke:#333,stroke-width:2px
+    style S fill:#9B59B6,stroke:#333,stroke-width:2px
+    style C fill:#FF7F50,stroke:#333,stroke-width:2px
+    style T fill:#4A90E2,stroke:#333,stroke-width:2px

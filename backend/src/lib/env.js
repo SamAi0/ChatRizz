@@ -17,6 +17,5 @@ export const ENV = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   ARCJET_KEY: process.env.ARCJET_KEY,
   ARCJET_ENV: process.env.ARCJET_ENV,
-  // OPENAI_API_KEY: process.env.OPENAI_API_KEY, // Removed as requested
   RAPIDAPI_KEY: process.env.RAPIDAPI_KEY,
 };

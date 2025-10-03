@@ -1,0 +1,44 @@
+```mermaid
+graph TD
+    A[User Opens Chat App] --> B[Login/Authentication]
+    B --> C[Load Chat Interface]
+    C --> D[View Chat List]
+    D --> E[Select Chat Partner]
+    E --> F[Load Message History]
+    F --> G[Display Messages]
+    G --> H{New Message?}
+    H -->|Yes| I[Receive Message]
+    H -->|No| J[Wait for Input]
+    J --> K{Action Type}
+    K -->|Send Text| L[Compose Message]
+    K -->|Send Image| M[Select Image]
+    K -->|Translate| N[Request Translation]
+    K -->|Delete| O[Delete Message]
+    K -->|Clear| P[Clear Chat]
+    
+    L --> Q[Send Message API]
+    M --> R[Upload Image]
+    R --> S[Send Image API]
+    Q --> T[Save to Database]
+    S --> T
+    T --> U[Send via Socket.IO]
+    U --> V[Update UI]
+    V --> H
+    
+    N --> W[Translation Service]
+    W --> X[Display Translation]
+    X --> H
+    
+    O --> Y[Delete Message API]
+    Y --> Z[Remove from Database]
+    Z --> V
+    
+    P --> AA[Clear Chat API]
+    AA --> AB[Delete Messages]
+    AB --> V
+    
+    style A fill:#4A90E2,stroke:#333,stroke-width:2px
+    style H fill:#FFD93D,stroke:#333,stroke-width:2px
+    style K fill:#FFD93D,stroke:#333,stroke-width:2px
+    style T fill:#50C878,stroke:#333,stroke-width:2px
+    style U fill:#9B59B6,stroke:#333,stroke-width:2px

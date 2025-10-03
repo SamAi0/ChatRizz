@@ -6,7 +6,8 @@ import {
   sendMessage,
   markAsSeen,
   clearChat,
-  deleteChat
+  deleteChat,
+  getUserMedia
 } from "../controllers/message.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { arcjetProtection } from "../middleware/arcjet.middleware.js";
@@ -19,6 +20,7 @@ router.use(arcjetProtection, protectRoute);
 
 router.get("/contacts", getAllContacts);
 router.get("/chats", getChatPartners);
+router.get("/media", getUserMedia); // New route for user media
 router.get("/:id", getMessagesByUserId);
 router.post("/send/:id", sendMessage);
 router.post("/seen/:id", markAsSeen);

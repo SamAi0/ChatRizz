@@ -1,0 +1,80 @@
+```mermaid
+classDiagram
+    class User {
+        +String _id
+        +String email
+        +String fullName
+        +String password
+        +String profilePic
+        +String statusText
+        +String bio
+        +Date dateOfBirth
+        +String location
+        +String phone
+        +String website
+        +Object privacy
+        +Object preferences
+        +String accountStatus
+        +Date createdAt
+        +Date lastActiveAt
+    }
+    
+    class Message {
+        +String _id
+        +ObjectId senderId
+        +ObjectId receiverId
+        +String text
+        +String image
+        +String attachmentUrl
+        +String attachmentType
+        +Boolean delivered
+        +Boolean seen
+        +Date seenAt
+        +Date createdAt
+        +Date updatedAt
+    }
+    
+    class ChatController {
+        +getAllContacts()
+        +getMessagesByUserId()
+        +sendMessage()
+        +markAsSeen()
+        +getChatPartners()
+        +clearChat()
+        +deleteChat()
+    }
+    
+    class TranslationService {
+        +translateText()
+        +detectLanguage()
+        +translateBatch()
+        +getAvailableLanguages()
+        +clearCache()
+    }
+    
+    class SocketService {
+        +getReceiverSocketId()
+        +userSocketMap
+        +handleConnection()
+        +handleDisconnect()
+    }
+    
+    class CloudinaryService {
+        +uploadImage()
+        +deleteImage()
+    }
+    
+    User "1" -- "0..*" Message : sends/receives
+    ChatController --> Message : manages
+    ChatController --> User : authenticates
+    ChatController --> SocketService : real-time
+    ChatController --> CloudinaryService : file handling
+    ChatController --> TranslationService : translation
+    TranslationService --> Message : translates
+    
+    style User fill:#4A90E2,stroke:#333,stroke-width:2px
+    style Message fill:#50C878,stroke:#333,stroke-width:2px
+    style ChatController fill:#FF6B6B,stroke:#333,stroke-width:2px
+    style TranslationService fill:#FFD93D,stroke:#333,stroke-width:2px
+    style SocketService fill:#9B59B6,stroke:#333,stroke-width:2px
+    style CloudinaryService fill:#FF7F50,stroke:#333,stroke-width:2px

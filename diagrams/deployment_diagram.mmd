@@ -1,0 +1,67 @@
+```mermaid
+graph TD
+    A[Client Devices] --> B[Load Balancer]
+    B --> C[Web Server]
+    C --> D[Application Server]
+    D --> E[Database Server]
+    D --> F[File Storage]
+    D --> G[Translation API]
+    D --> H[Socket.IO Server]
+    
+    A --> I[Mobile Devices]
+    A --> J[Desktop Browsers]
+    A --> K[Tablet Devices]
+    
+    C --> L[Nginx]
+    L --> M[Node.js App]
+    
+    M --> N[MongoDB]
+    M --> O[Cloudinary]
+    M --> P[RapidAPI]
+    M --> Q[Socket.IO]
+    
+    subgraph "Client Tier"
+        A
+        I
+        J
+        K
+    end
+    
+    subgraph "Server Tier"
+        B
+        C
+        D
+        H
+    end
+    
+    subgraph "Data Tier"
+        E
+        F
+        G
+    end
+    
+    subgraph "Web Server Details"
+        C
+        L
+        M
+    end
+    
+    subgraph "Database & Services"
+        N
+        O
+        P
+        Q
+    end
+    
+    style A fill:#4A90E2,stroke:#333,stroke-width:2px
+    style B fill:#50C878,stroke:#333,stroke-width:2px
+    style C fill:#FF6B6B,stroke:#333,stroke-width:2px
+    style D fill:#FFD93D,stroke:#333,stroke-width:2px
+    style E fill:#9B59B6,stroke:#333,stroke-width:2px
+    style F fill:#FF7F50,stroke:#333,stroke-width:2px
+    style G fill:#4A90E2,stroke:#333,stroke-width:2px
+    style H fill:#50C878,stroke:#333,stroke-width:2px
+    style N fill:#FF6B6B,stroke:#333,stroke-width:1px
+    style O fill:#FFD93D,stroke:#333,stroke-width:1px
+    style P fill:#9B59B6,stroke:#333,stroke-width:1px
+    style Q fill:#FF7F50,stroke:#333,stroke-width:1px

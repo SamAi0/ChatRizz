@@ -1,0 +1,49 @@
+```mermaid
+flowchart TD
+    A[Start Chat Application] --> B[User Authentication]
+    B --> C{Valid Credentials?}
+    C -->|No| D[Show Login Page]
+    D --> E[Enter Email & Password]
+    E --> B
+    C -->|Yes| F[Load Chat Interface]
+    F --> G[Fetch Chat Partners]
+    G --> H[Display Chat List]
+    H --> I{Select Chat?}
+    I -->|Yes| J[Load Message History]
+    J --> K[Display Messages]
+    K --> L{User Action}
+    L -->|Send Message| M[Compose & Send]
+    L -->|Upload File| N[Select & Upload]
+    L -->|Translate Message| O[Request Translation]
+    L -->|Delete Message| P[Confirm & Delete]
+    L -->|Clear Chat| Q[Confirm & Clear]
+    L -->|View Profile| R[Load Profile Info]
+    
+    M --> S[Save to Database]
+    S --> T[Send via Socket.IO]
+    T --> U[Update UI for All Users]
+    U --> K
+    
+    N --> V[Upload to Cloudinary]
+    V --> S
+    
+    O --> W[Call Translation API]
+    W --> X[Receive Translation]
+    X --> Y[Display Translated Text]
+    Y --> K
+    
+    P --> Z[Remove from Database]
+    Z --> K
+    
+    Q --> AA[Delete All Messages]
+    AA --> K
+    
+    R --> AB[Show Profile Details]
+    AB --> AC[Return to Chat]
+    AC --> K
+    
+    style A fill:#4A90E2,stroke:#333,stroke-width:2px
+    style C fill:#FFD93D,stroke:#333,stroke-width:2px
+    style L fill:#FFD93D,stroke:#333,stroke-width:2px
+    style S fill:#50C878,stroke:#333,stroke-width:2px
+    style T fill:#9B59B6,stroke:#333,stroke-width:2px

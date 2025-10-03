@@ -8,10 +8,12 @@ export const useChatStore = create((set, get) => ({
   allContacts: [],
   chats: [],
   messages: [],
+  userMedia: [], // New state for user media
   activeTab: "chats",
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  isMediaLoading: false, // New loading state for media
   isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
 
   toggleSound: () => {
@@ -56,6 +58,21 @@ export const useChatStore = create((set, get) => ({
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isMessagesLoading: false });
+    }
+  },
+
+  // New function to fetch user media
+  getUserMedia: async () => {
+    set({ isMediaLoading: true });
+    try {
+      const res = await axiosInstance.get("/messages/media");
+      set({ userMedia: res.data });
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to fetch user media");
+      return [];
+    } finally {
+      set({ isMediaLoading: false });
     }
   },
 

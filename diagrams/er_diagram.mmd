@@ -1,0 +1,43 @@
+```mermaid
+erDiagram
+    USER ||--o{ MESSAGE : sends
+    USER ||--o{ MESSAGE : receives
+    USER {
+        string _id PK
+        string email
+        string fullName
+        string password
+        string profilePic
+        string statusText
+        string bio
+        date dateOfBirth
+        string location
+        string phone
+        string website
+        object privacy
+        object preferences
+        string accountStatus
+        date createdAt
+        date lastActiveAt
+    }
+    
+    MESSAGE {
+        string _id PK
+        string senderId FK
+        string receiverId FK
+        string text
+        string image
+        string attachmentUrl
+        string attachmentType
+        boolean delivered
+        boolean seen
+        date seenAt
+        date createdAt
+        date updatedAt
+    }
+    
+    USER ||--o{ USER : blocks
+    USER ||--o{ USER : allows
+    
+    style USER fill:#4A90E2,stroke:#333,stroke-width:2px
+    style MESSAGE fill:#50C878,stroke:#333,stroke-width:2px

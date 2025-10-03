@@ -1,0 +1,41 @@
+```mermaid
+graph LR
+    A[User Interface] --> B[Message Controller]
+    B --> C[Message Model]
+    C --> D[(MongoDB Database)]
+    B --> E[Socket.IO]
+    E --> F[Real-time Messaging]
+    F --> A
+    B --> G[Cloudinary]
+    G --> H[File Storage]
+    B --> I[Translation Service]
+    I --> J[RapidAPI]
+    
+    subgraph "Frontend"
+        A
+    end
+    
+    subgraph "Backend"
+        B
+        C
+        E
+        I
+    end
+    
+    subgraph "External Services"
+        D
+        G
+        H
+        J
+    end
+    
+    style A fill:#4A90E2,stroke:#333,stroke-width:2px
+    style B fill:#50C878,stroke:#333,stroke-width:2px
+    style C fill:#FF6B6B,stroke:#333,stroke-width:2px
+    style D fill:#FFD93D,stroke:#333,stroke-width:2px
+    style E fill:#9B59B6,stroke:#333,stroke-width:2px
+    style F fill:#FF7F50,stroke:#333,stroke-width:2px
+    style G fill:#4A90E2,stroke:#333,stroke-width:2px
+    style H fill:#50C878,stroke:#333,stroke-width:2px
+    style I fill:#FF6B6B,stroke:#333,stroke-width:2px
+    style J fill:#FFD93D,stroke:#333,stroke-width:2px

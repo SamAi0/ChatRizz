@@ -1,0 +1,65 @@
+```mermaid
+graph LR
+    A[ChatRizz Application] --> B[Frontend]
+    A --> C[Backend]
+    A --> D[Database]
+    A --> E[External APIs]
+    
+    B --> B1[Components]
+    B --> B2[Pages]
+    B --> B3[Store]
+    B --> B4[Hooks]
+    B --> B5[Lib]
+    
+    C --> C1[Controllers]
+    C --> C2[Models]
+    C --> C3[Routes]
+    C --> C4[Middleware]
+    C --> C5[Services]
+    C --> C6[Lib]
+    
+    B1 --> B1A[ChatContainer]
+    B1 --> B1B[MessageInput]
+    B1 --> B1C[MessageBubble]
+    B1 --> B1D[ChatHeader]
+    B1 --> B1E[ChatsList]
+    
+    B2 --> B2A[ChatPage]
+    B2 --> B2B[LoginPage]
+    B2 --> B2C[ProfilePage]
+    
+    B3 --> B3A[useChatStore]
+    B3 --> B3B[useAuthStore]
+    B3 --> B3C[useTranslationStore]
+    
+    C1 --> C1A[MessageController]
+    C1 --> C1B[AuthController]
+    C1 --> C1C[ProfileController]
+    
+    C2 --> C2A[UserModel]
+    C2 --> C2B[MessageModel]
+    
+    C3 --> C3A[MessageRoutes]
+    C3 --> C3B[AuthRoutes]
+    C3 --> C3C[ProfileRoutes]
+    
+    C5 --> C5A[TranslationService]
+    
+    D --> D1[MongoDB]
+    
+    E --> E1[Cloudinary]
+    E --> E2[RapidAPI Translation]
+    E --> E3[Socket.IO]
+    
+    style A fill:#4A90E2,stroke:#333,stroke-width:2px
+    style B fill:#50C878,stroke:#333,stroke-width:2px
+    style C fill:#FF6B6B,stroke:#333,stroke-width:2px
+    style D fill:#FFD93D,stroke:#333,stroke-width:2px
+    style E fill:#9B59B6,stroke:#333,stroke-width:2px
+    
+    style B1 fill:#4A90E2,stroke:#333,stroke-width:1px
+    style B2 fill:#4A90E2,stroke:#333,stroke-width:1px
+    style B3 fill:#4A90E2,stroke:#333,stroke-width:1px
+    style C1 fill:#50C878,stroke:#333,stroke-width:1px
+    style C2 fill:#50C878,stroke:#333,stroke-width:1px
+    style C3 fill:#50C878,stroke:#333,stroke-width:1px

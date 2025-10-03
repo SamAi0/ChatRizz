@@ -1,0 +1,66 @@
+```mermaid
+graph TD
+    A[ChatRizz System] --> B[User Entity]
+    A --> C[Message Entity]
+    A --> D[Chat Entity]
+    A --> E[Translation Entity]
+    A --> F[File Entity]
+    
+    B --> B1[User ID]
+    B --> B2[Email]
+    B --> B3[Full Name]
+    B --> B4[Password]
+    B --> B5[Profile Picture]
+    B --> B6[Status Text]
+    B --> B7[Bio]
+    B --> B8[Date of Birth]
+    B --> B9[Location]
+    B --> B10[Phone]
+    B --> B11[Website]
+    B --> B12[Privacy Settings]
+    B --> B13[Preferences]
+    B --> B14[Account Status]
+    B --> B15[Created At]
+    B --> B16[Last Active]
+    
+    C --> C1[Message ID]
+    C --> C2[Sender ID]
+    C --> C3[Receiver ID]
+    C --> C4[Text Content]
+    C --> C5[Image URL]
+    C --> C6[Attachment URL]
+    C --> C7[Attachment Type]
+    C --> C8[Delivered Status]
+    C --> C9[Seen Status]
+    C --> C10[Seen At]
+    C --> C11[Created At]
+    C --> C12[Updated At]
+    
+    D --> D1[Chat ID]
+    D --> D2[Participants]
+    D --> D3[Last Message]
+    D --> D4[Unread Count]
+    D --> D5[Created At]
+    D --> D6[Updated At]
+    
+    E --> E1[Translation ID]
+    E --> E2[Original Text]
+    E --> E3[Translated Text]
+    E --> E4[Source Language]
+    E --> E5[Target Language]
+    E --> E6[Detected Language]
+    E --> E7[Created At]
+    
+    F --> F1[File ID]
+    F --> F2[File URL]
+    F --> F3[File Type]
+    F --> F4[Uploaded By]
+    F --> F5[Message ID]
+    F --> F6[Created At]
+    
+    style A fill:#4A90E2,stroke:#333,stroke-width:2px
+    style B fill:#50C878,stroke:#333,stroke-width:2px
+    style C fill:#FF6B6B,stroke:#333,stroke-width:2px
+    style D fill:#FFD93D,stroke:#333,stroke-width:2px
+    style E fill:#9B59B6,stroke:#333,stroke-width:2px
+    style F fill:#FF7F50,stroke:#333,stroke-width:2px
