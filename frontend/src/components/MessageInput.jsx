@@ -7,7 +7,7 @@ import { ImageIcon, SendIcon, XIcon, PaperclipIcon, SmileIcon, SparklesIcon, Lan
 import DefaultMessagesManager from "./DefaultMessagesManager";
 import TranslationSettingsPanel from "./TranslationSettingsPanel";
 
-function MessageInput() {
+function MessageInput({ isGroupChat = false }) {
   const { playRandomKeyStrokeSound } = useKeyboardSound();
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
@@ -18,7 +18,7 @@ function MessageInput() {
   const imageInputRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const { sendMessage, isSoundEnabled, selectedUser } = useChatStore();
+  const { sendMessage, sendGroupMessage, isSoundEnabled, selectedUser, selectedGroup } = useChatStore();
   const { socket } = useAuthStore();
 
   const handleSendMessage = (e) => {
@@ -26,12 +26,22 @@ function MessageInput() {
     if (!text.trim() && !imagePreview && !fileInfo) return;
     if (isSoundEnabled) playRandomKeyStrokeSound();
 
-    sendMessage({
-      text: text.trim(),
-      image: imagePreview,
-      attachmentUrl: fileInfo?.url,
-      attachmentType: fileInfo?.type,
-    });
+    if (isGroupChat && selectedGroup) {
+      sendGroupMessage(selectedGroup._id, {
+        text: text.trim(),
+        image: imagePreview,
+        attachmentUrl: fileInfo?.url,
+        attachmentType: fileInfo?.type,
+      });
+    } else if (selectedUser) {
+      sendMessage({
+        text: text.trim(),
+        image: imagePreview,
+        attachmentUrl: fileInfo?.url,
+        attachmentType: fileInfo?.type,
+      });
+    }
+
     setText("");
     setImagePreview("");
     setFileInfo(null);
@@ -99,11 +109,22 @@ function MessageInput() {
             onChange={(e) => {
               setText(e.target.value);
               isSoundEnabled && playRandomKeyStrokeSound();
-              if (socket && selectedUser) socket.emit("typing", { to: selectedUser._id });
+              // Handle typing indicators
+              if (socket && selectedUser) {
+                socket.emit("typing", { to: selectedUser._id });
+              } else if (socket && selectedGroup && isGroupChat) {
+                socket.emit("groupTyping", { groupId: selectedGroup._id, userId: useAuthStore.getState().authUser._id });
+              }
             }}
-            onBlur={() => socket?.emit("stopTyping", { to: selectedUser?._id })}
+            onBlur={() => {
+              if (socket && selectedUser) {
+                socket.emit("stopTyping", { to: selectedUser._id });
+              } else if (socket && selectedGroup && isGroupChat) {
+                socket.emit("groupStopTyping", { groupId: selectedGroup._id, userId: useAuthStore.getState().authUser._id });
+              }
+            }}
             className="w-full rounded-input text-slate-200 placeholder-slate-400"
-            placeholder="Type your message..."
+            placeholder={isGroupChat ? `Message ${selectedGroup?.name || "group"}...` : "Type your message..."}
           />
         </div>
 

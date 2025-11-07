@@ -9,9 +9,10 @@ import ContactList from "../components/ContactList";
 import ChatContainer from "../components/ChatContainer";
 import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 import ProfileSidebar from "../components/ProfileSidebar";
+import GroupMemberList from "../components/GroupMemberList";
 
 function ChatPage() {
-  const { activeTab, selectedUser } = useChatStore();
+  const { activeTab, selectedUser, selectedGroup } = useChatStore();
   const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
 
@@ -42,9 +43,18 @@ function ChatPage() {
           </div>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="flex-1 flex flex-col bg-slate-900/50 backdrop-blur-sm relative">
-          {selectedUser ? <ChatContainer /> : <NoConversationPlaceholder />}
+        {/* RIGHT SIDE - Main chat area */}
+        <div className="flex flex-1">
+          <div className="flex-1 flex flex-col bg-slate-900/50 backdrop-blur-sm relative">
+            {selectedUser || selectedGroup ? <ChatContainer /> : <NoConversationPlaceholder />}
+          </div>
+          
+          {/* Group member sidebar - only show when a group is selected */}
+          {selectedGroup && (
+            <div className="w-80 bg-slate-800/50 border-l border-slate-700/50 p-4 hidden lg:block">
+              <GroupMemberList group={selectedGroup} />
+            </div>
+          )}
         </div>
       </BorderAnimatedContainer>
       

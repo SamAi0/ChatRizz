@@ -37,6 +37,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={authUser ? <ChatPage /> : <Navigate to={"/login"} />} />
+        <Route path="/group/:id" element={<Navigate to="/" />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to={"/login"} />} />
         <Route path="/profile/:userId" element={authUser ? <ProfilePage /> : <Navigate to={"/login"} />} />
         <Route path="/profile/settings" element={authUser ? <ProfileSettingsPage /> : <Navigate to={"/login"} />} />

@@ -158,6 +158,41 @@ export const useAuthStore = create((set, get) => ({
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
+
+    // Listen for new group messages
+    socket.on("newGroupMessage", (message) => {
+      // This will be handled by the chat store
+      console.log("New group message received:", message);
+    });
+
+    // Listen for group typing events
+    socket.on("groupTyping", ({ groupId, userId }) => {
+      // Handle group typing indicators
+      console.log(`User ${userId} is typing in group ${groupId}`);
+    });
+
+    socket.on("groupStopTyping", ({ groupId, userId }) => {
+      // Handle group stop typing indicators
+      console.log(`User ${userId} stopped typing in group ${groupId}`);
+    });
+
+    // Listen for group members added event
+    socket.on("groupMembersAdded", ({ groupId, newMembers, updatedGroup }) => {
+      console.log("Group members added:", { groupId, newMembers, updatedGroup });
+      // This will be handled by the chat store if needed
+    });
+
+    // Listen for group members removed event
+    socket.on("groupMemberRemoved", ({ groupId, removedMemberId, updatedGroup }) => {
+      console.log("Group member removed:", { groupId, removedMemberId, updatedGroup });
+      // This will be handled by the chat store if needed
+    });
+
+    // Listen for group admin changed event
+    socket.on("groupAdminChanged", ({ groupId, newAdminId, updatedGroup }) => {
+      console.log("Group admin changed:", { groupId, newAdminId, updatedGroup });
+      // This will be handled by the chat store if needed
+    });
   },
 
   disconnectSocket: () => {

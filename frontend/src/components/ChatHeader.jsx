@@ -183,7 +183,7 @@ function ChatHeader() {
             </button>
             
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-lg border border-slate-700 shadow-lg z-50">
+              <div className="absolute right-0 mt-2 w-56 bg-slate-800 rounded-lg border border-slate-700 shadow-lg dropdown-menu">
                 {/* Removed the "View Profile" option that navigates to the profile page */}
                 
                 {selectedUser && (
@@ -228,6 +228,7 @@ function ChatHeader() {
                 </button>
               </div>
             )}
+
           </div>
           
           <button onClick={() => setSelectedUser(null)}>

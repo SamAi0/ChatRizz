@@ -4,7 +4,7 @@ import { useTranslationStore } from '../store/useTranslationStore';
 import { useAuthStore } from '../store/useAuthStore';
 import TranslationPanel from './TranslationPanel';
 
-const MessageBubble = ({ message, onImageClick }) => {
+const MessageBubble = ({ message, onImageClick, isGroupMessage = false }) => {
   const { authUser } = useAuthStore();
   const {
     autoTranslate,
@@ -20,13 +20,26 @@ const MessageBubble = ({ message, onImageClick }) => {
   const [showTranslatedText, setShowTranslatedText] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState(null);
 
-  const isOwnMessage = message.senderId === authUser._id;
+  // Fix the isOwnMessage check to handle both populated and non-populated senderId
+  const isOwnMessage = () => {
+    if (!message.senderId) return false;
+    
+    // If senderId is a populated object
+    if (typeof message.senderId === 'object' && message.senderId._id) {
+      return message.senderId._id === authUser._id;
+    }
+    
+    // If senderId is just an ID string
+    return message.senderId === authUser._id;
+  };
+
+  const isOwn = isOwnMessage();
   const hasText = message.text && message.text.trim().length > 0;
   const isTranslating = isMessageTranslating(message._id);
 
   // Check for existing translation when component mounts or when message changes
   useEffect(() => {
-    if (!isOwnMessage && hasText && preferredLanguage) {
+    if (!isOwn && hasText && preferredLanguage) {
       // Check if translation already exists in cache
       const cached = getMessageTranslation(message._id, 'auto', preferredLanguage);
       if (cached) {
@@ -39,20 +52,20 @@ const MessageBubble = ({ message, onImageClick }) => {
         }
       }
     }
-  }, [message._id, message.text, isOwnMessage, hasText, preferredLanguage, autoTranslate, getMessageTranslation]);
+  }, [message._id, message.text, isOwn, hasText, preferredLanguage, autoTranslate, getMessageTranslation]);
 
   // Auto-translate when enabled and not own message
   useEffect(() => {
-    if (autoTranslate && !isOwnMessage && hasText && preferredLanguage) {
+    if (autoTranslate && !isOwn && hasText && preferredLanguage) {
       handleAutoTranslate();
     }
-  }, [autoTranslate, isOwnMessage, hasText, preferredLanguage, message._id, message.text]);
+  }, [autoTranslate, isOwn, hasText, preferredLanguage, message._id, message.text]);
 
   // Listen for translation updates
   useEffect(() => {
     // This effect will run when the translation store updates
     const checkForTranslation = () => {
-      if (!isOwnMessage && hasText && preferredLanguage) {
+      if (!isOwn && hasText && preferredLanguage) {
         const cached = getMessageTranslation(message._id, 'auto', preferredLanguage);
         if (cached && !translation) {
           setTranslation(cached);
@@ -73,21 +86,21 @@ const MessageBubble = ({ message, onImageClick }) => {
     const interval = setInterval(checkForTranslation, 500);
     
     return () => clearInterval(interval);
-  }, [message._id, isOwnMessage, hasText, preferredLanguage, autoTranslate, translation, getMessageTranslation]);
+  }, [message._id, isOwn, hasText, preferredLanguage, autoTranslate, translation, getMessageTranslation]);
 
   // Automatically show translated text when auto-translate is enabled and translation is available
   useEffect(() => {
-    if (autoTranslate && !isOwnMessage && translation && !showTranslatedText) {
+    if (autoTranslate && !isOwn && translation && !showTranslatedText) {
       setShowTranslatedText(true);
     }
     // Hide translated text when auto-translate is disabled
     if (!autoTranslate && showTranslatedText) {
       setShowTranslatedText(false);
     }
-  }, [autoTranslate, translation, isOwnMessage, showTranslatedText]);
+  }, [autoTranslate, translation, isOwn, showTranslatedText]);
 
   const handleAutoTranslate = async () => {
-    if (!hasText || isOwnMessage) return;
+    if (!hasText || isOwn) return;
 
     try {
       // Check if translation already exists
@@ -123,14 +136,34 @@ const MessageBubble = ({ message, onImageClick }) => {
   };
 
   // Don't show translation options for own messages or messages without text
-  const shouldShowTranslationControls = !isOwnMessage && hasText;
+  const shouldShowTranslationControls = !isOwn && hasText;
+
+  // Function to get sender name for group messages
+  const getSenderName = () => {
+    if (!isGroupMessage || isOwn || !message.senderId) return "";
+    
+    // If senderId is a populated object
+    if (typeof message.senderId === 'object' && message.senderId.fullName) {
+      return message.senderId.fullName;
+    }
+    
+    // If senderId is just an ID, we can't display the name
+    return "Unknown User";
+  };
 
   return (
     <>
-      <div className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}>
+      <div className={`chat ${isOwn ? "chat-end" : "chat-start"}`}>
+        {/* Show sender name for group messages from other users */}
+        {isGroupMessage && !isOwn && message.senderId && (
+          <div className="chat-header text-xs text-slate-400 mb-1">
+            {getSenderName()}
+          </div>
+        )}
+        
         <div
           className={`glowing-bubble relative group ${
-            isOwnMessage
+            isOwn
               ? "bg-gradient-to-r from-cyan-600 to-blue-600 text-white"
               : "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
           }`}
@@ -245,7 +278,7 @@ const MessageBubble = ({ message, onImageClick }) => {
               hour: "2-digit",
               minute: "2-digit",
             })}
-            {isOwnMessage && (
+            {isOwn && (
               <span className="ml-1">
                 {message.seen ? "✅✅" : message.delivered ? "✅✅" : "✅"}
               </span>

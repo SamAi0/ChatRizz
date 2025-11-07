@@ -43,6 +43,7 @@
   margin: 0.25rem 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   animation: glow 2s ease-in-out infinite alternate;
+  z-index: 10; /* Reduced z-index to prevent overlapping with dropdown menus */
 }
 
 .glowing-bubble::before {
@@ -82,6 +83,7 @@
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+  z-index: 20; /* Ensure send button is above other content */
 }
 
 .neon-send-btn:hover {
@@ -119,6 +121,7 @@
   border-radius: 50%;
   border: 2px solid #0f172a;
   background-color: #10b981;
+  z-index: 20; /* Ensure indicators are visible above bubbles */
 }
 
 .offline-indicator {
@@ -130,6 +133,7 @@
   border-radius: 50%;
   border: 2px solid #0f172a;
   background-color: #64748b;
+  z-index: 20; /* Ensure indicators are visible above bubbles */
 }
 
 /* Rounded input bar */
@@ -140,12 +144,18 @@
   border: 1px solid rgba(100, 116, 139, 0.3);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  z-index: 20; /* Ensure input is above other content */
 }
 
 .rounded-input:focus {
   outline: none;
   border-color: #06b6d4;
   box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.3);
+}
+
+/* Dropdown menus */
+.dropdown-menu {
+  z-index: 50; /* Ensure dropdown menus are above all other content */
 }
 
 .input {
