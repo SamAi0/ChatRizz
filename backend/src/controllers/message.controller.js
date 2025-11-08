@@ -189,11 +189,13 @@ export const getChatPartners = async (req, res) => {
 
     const chatPartnerIds = [
       ...new Set(
-        messages.map((msg) =>
-          msg.senderId.toString() === loggedInUserId.toString()
-            ? msg.receiverId.toString()
-            : msg.senderId.toString()
-        )
+        messages
+          .filter(msg => msg.senderId && msg.receiverId) // Filter out messages with null senderId or receiverId
+          .map((msg) =>
+            msg.senderId.toString() === loggedInUserId.toString()
+              ? msg.receiverId.toString()
+              : msg.senderId.toString()
+          )
       ),
     ];
 

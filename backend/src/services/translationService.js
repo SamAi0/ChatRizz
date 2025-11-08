@@ -205,6 +205,54 @@ class TranslationService {
   }
 
   /**
+   * Translate group message for multiple recipients with different language preferences
+   */
+  async translateGroupMessage(text, recipientLanguages) {
+    if (!text || text.trim().length === 0) {
+      return {};
+    }
+
+    if (!recipientLanguages || Object.keys(recipientLanguages).length === 0) {
+      return {};
+    }
+
+    const translations = {};
+    
+    // Get unique languages to minimize API calls
+    const uniqueLanguages = [...new Set(Object.values(recipientLanguages))];
+    
+    // Detect source language
+    const sourceLanguage = await this.detectLanguage(text);
+    
+    // Translate text for each unique language
+    const translationPromises = uniqueLanguages.map(async (targetLang) => {
+      if (sourceLanguage === targetLang) {
+        return { targetLang, translatedText: text };
+      }
+      
+      const result = await this.translateText(text, sourceLanguage, targetLang);
+      return { targetLang, translatedText: result.translatedText };
+    });
+    
+    try {
+      const translationResults = await Promise.all(translationPromises);
+      
+      // Map translations back to recipients
+      for (const [recipientId, lang] of Object.entries(recipientLanguages)) {
+        const translation = translationResults.find(t => t.targetLang === lang);
+        if (translation) {
+          translations[recipientId] = translation.translatedText;
+        }
+      }
+      
+      return translations;
+    } catch (error) {
+      console.error('Group message translation error:', error);
+      return {};
+    }
+  }
+
+  /**
    * Get available languages
    */
   getAvailableLanguages() {

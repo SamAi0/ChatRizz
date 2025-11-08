@@ -9,9 +9,11 @@ import messageRoutes from "./routes/message.route.js";
 import profileRoutes from "./routes/profile.route.js";
 import adminRoutes from "./routes/admin.route.js";
 import translationRoutes from "./routes/translation.routes.js";
+import groupRoutes from "./routes/group.route.js";
+import broadcastRoutes from "./routes/broadcast.route.js";
 import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
-import { app, server } from "./lib/socket.js";
+import { app, server, io } from "./lib/socket.js";
 import { initEmailService } from "./emails/emailHandlers.js";
 
 // Resolve current file path in ESM and derive directory
@@ -19,6 +21,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = ENV.PORT || 3000;
+
+// Make io instance available in req.app
+app.set('io', io);
 
 app.use(express.json({ limit: "5mb" })); // req.body
 
@@ -49,6 +54,8 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/translation", translationRoutes);
+app.use("/api/groups", groupRoutes);
+app.use("/api/broadcast", broadcastRoutes);
 
 // make ready for deployment
 if (ENV.NODE_ENV === "production") {

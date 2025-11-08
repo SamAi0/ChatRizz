@@ -235,6 +235,53 @@ router.post('/message', protectRoute, async (req, res) => {
 });
 
 /**
+ * @route   POST /api/translation/group-message
+ * @desc    Translate a group message for multiple recipients with different language preferences
+ * @access  Private
+ */
+router.post('/group-message', protectRoute, async (req, res) => {
+  try {
+    const { content, recipientLanguages } = req.body;
+
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        message: 'Content is required'
+      });
+    }
+
+    if (!recipientLanguages || typeof recipientLanguages !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: 'Recipient languages mapping is required'
+      });
+    }
+
+    const translations = await translationService.translateGroupMessage(content, recipientLanguages);
+    const languages = translationService.getAvailableLanguages();
+
+    res.json({
+      success: true,
+      originalText: content,
+      translations,
+      languageNames: Object.fromEntries(
+        Object.entries(recipientLanguages).map(([userId, langCode]) => [
+          userId, 
+          languages[langCode] || 'Unknown'
+        ])
+      )
+    });
+
+  } catch (error) {
+    console.error('Group message translation error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Group message translation failed'
+    });
+  }
+});
+
+/**
  * @route   GET /api/translation/stats
  * @desc    Get translation cache statistics (admin)
  * @access  Private

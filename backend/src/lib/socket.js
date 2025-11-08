@@ -26,8 +26,42 @@ export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
 }
 
-// this is for storig online users
+// Store user socket mappings
 const userSocketMap = {}; // {userId:socketId}
+
+// Store user group memberships
+const userGroups = {}; // {userId: [groupId1, groupId2, ...]}
+
+// Function to add user to a group
+export function addUserToGroup(userId, groupId) {
+  if (!userGroups[userId]) {
+    userGroups[userId] = [];
+  }
+  if (!userGroups[userId].includes(groupId)) {
+    userGroups[userId].push(groupId);
+  }
+}
+
+// Function to remove user from a group
+export function removeUserFromGroup(userId, groupId) {
+  if (userGroups[userId]) {
+    userGroups[userId] = userGroups[userId].filter(id => id !== groupId);
+  }
+}
+
+// Function to get all socket IDs for a group
+export function getGroupSocketIds(groupId) {
+  const socketIds = [];
+  for (const [userId, groupIdList] of Object.entries(userGroups)) {
+    if (groupIdList.includes(groupId)) {
+      const socketId = userSocketMap[userId];
+      if (socketId) {
+        socketIds.push(socketId);
+      }
+    }
+  }
+  return socketIds;
+}
 
 io.on("connection", (socket) => {
   console.log("A user connected", socket.user?.fullName || socket.id);
@@ -35,8 +69,30 @@ io.on("connection", (socket) => {
   const userId = socket.userId;
   userSocketMap[userId] = socket.id;
 
-  // io.emit() is used to send events to all connected clients
+  // Join user to their groups (this would need to be implemented based on actual group memberships)
+  // For now, we'll emit online users
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+  // Listen for group join event
+  socket.on("joinGroup", (groupId) => {
+    socket.join(`group-${groupId}`);
+    addUserToGroup(userId, groupId);
+  });
+
+  // Listen for group leave event
+  socket.on("leaveGroup", (groupId) => {
+    socket.leave(`group-${groupId}`);
+    removeUserFromGroup(userId, groupId);
+  });
+
+  // Listen for typing events in groups
+  socket.on("groupTyping", ({ groupId, userId }) => {
+    socket.to(`group-${groupId}`).emit("groupTyping", { groupId, userId });
+  });
+
+  socket.on("groupStopTyping", ({ groupId, userId }) => {
+    socket.to(`group-${groupId}`).emit("groupStopTyping", { groupId, userId });
+  });
 
   // with socket.on we listen for events from clients
   socket.on("typing", ({ to }) => {
@@ -50,8 +106,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.user.fullName);
+    console.log("A user disconnected", socket.user?.fullName || socket.id);
     delete userSocketMap[userId];
+    delete userGroups[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 });
